@@ -1,0 +1,240 @@
+{
+  "conversations": [
+    {
+      "id": "mmrmusx5fmrwc",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Meet, Maahi is online. I've got 12 tools loaded — web search, task management, note-taking, memory, calculations, document generation, and more. What do you need?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Connection error: Stream error 500. Check server logs."
+        }
+      ],
+      "updatedAt": "2026-03-15T10:50:04.175Z"
+    },
+    {
+      "id": "mmrn1vb5l7s1b",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Fresh conversation started. What do you need, Meet?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Connection error: invalid x-api-key. Check server logs."
+        }
+      ],
+      "updatedAt": "2026-03-15T10:55:32.464Z"
+    },
+    {
+      "id": "mmrn30mbqp8vw",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Meet, Maahi is online. I've got 12 tools loaded — web search, task management, note-taking, memory, calculations, document generation, and more. What do you need?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Connection error: Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.. Check server logs."
+        }
+      ],
+      "updatedAt": "2026-03-15T10:56:25.864Z"
+    },
+    {
+      "id": "mmteixx2gz34z",
+      "title": "Good morning Maahi! Give me my daily briefing.",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Meet, Maahi is online. I've got 12 tools loaded — web search, task management, note-taking, memory, calculations, document generation, and more. What do you need?"
+        },
+        {
+          "role": "user",
+          "content": "Good morning Maahi! Give me my daily briefing."
+        },
+        {
+          "role": "assistant",
+          "content": "Connection error: Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.. Check server logs."
+        }
+      ],
+      "updatedAt": "2026-03-16T16:32:29.181Z"
+    },
+    {
+      "id": "mn7vmplmt1a90qw90xe",
+      "title": "Hey",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "Hey"
+        },
+        {
+          "role": "assistant",
+          "content": "Something went wrong: This model models/gemini-2.0-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements."
+        }
+      ],
+      "updatedAt": "2026-03-26T19:40:02.870Z"
+    },
+    {
+      "id": "mn7vo9iy7hb1ot8sw4o",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Something went wrong: models/gemini-2.5-flash-preview-04-17 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods."
+        }
+      ],
+      "updatedAt": "2026-03-26T19:41:11.990Z"
+    },
+    {
+      "id": "mn7vpt3vxlk9v",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Meet, Maahi is online. I've got 12 tools loaded — web search, task management, note-taking, memory, calculations, document generation, and more. What do you need?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Hey Meet! Good to hear from you. What's on your mind today? Or do you need a quick briefing to kick things off?"
+        }
+      ],
+      "updatedAt": "2026-03-26T19:42:31.551Z"
+    },
+    {
+      "id": "mn7vqdtuqlus7y3yyn8",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello Meet! How can I help you today? Anything exciting happening, or do we have some dragons to slay?"
+        }
+      ],
+      "updatedAt": "2026-03-26T19:42:55.575Z"
+    },
+    {
+      "id": "mn7vwrmpkbravv5vpu",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": ""
+        }
+      ],
+      "updatedAt": "2026-03-26T19:54:04.494Z"
+    },
+    {
+      "id": "mn7wk924ekq7vmp9s4n",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "Hey Meet! Good to hear from you. How can I help you today?"
+        }
+      ],
+      "updatedAt": "2026-03-26T20:06:06.252Z"
+    },
+    {
+      "id": "mn7wzogy93sjek368xe",
+      "title": "what is my latest email?",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "what is my latest email?"
+        },
+        {
+          "role": "assistant",
+          "content": "Something went wrong: network error"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": ""
+        }
+      ],
+      "updatedAt": "2026-03-26T20:19:41.086Z"
+    },
+    {
+      "id": "mn7x1vtxlvy86qvsb8m",
+      "title": "hi",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hey Meet. I am here — what's on your mind?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": ""
+        }
+      ],
+      "updatedAt": "2026-03-26T20:19:46.917Z"
+    }
+  ]
+}

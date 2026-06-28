@@ -1,0 +1,633 @@
+2026-05-17 05:18:49,588 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 05:18:53,116 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 05:19:40,076 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 05:19:40,845 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-tiny.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 05:19:40,960 INFO    faster_whisper :: Processing audio with duration 00:02.130
+2026-05-17 05:19:41,467 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 05:20:29,438 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 05:20:30,998 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 05:21:32,499 INFO    faster_whisper :: Processing audio with duration 00:02.640
+2026-05-17 05:21:39,729 INFO    faster_whisper :: Processing audio with duration 00:01.680
+2026-05-17 05:21:41,379 INFO    faster_whisper :: Processing audio with duration 00:01.320
+2026-05-17 05:21:45,851 INFO    faster_whisper :: Processing audio with duration 00:04.140
+2026-05-17 05:21:58,692 INFO    faster_whisper :: Processing audio with duration 00:03.030
+2026-05-17 05:36:22,782 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 05:36:25,445 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 05:36:34,245 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 05:36:35,083 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-tiny.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 05:36:35,194 INFO    faster_whisper :: Processing audio with duration 00:08.610
+2026-05-17 05:36:42,332 INFO    faster_whisper :: Processing audio with duration 00:02.070
+2026-05-17 05:36:46,622 INFO    faster_whisper :: Processing audio with duration 00:02.670
+2026-05-17 05:36:50,342 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:12:43,591 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 06:12:45,841 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 06:12:54,162 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 06:12:54,163 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 06:14:02,714 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 06:14:02,769 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 06:14:04,435 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 06:14:05,657 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 06:14:05,657 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 06:14:13,790 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 06:14:14,630 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-tiny.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 06:14:14,741 INFO    faster_whisper :: Processing audio with duration 00:07.020
+2026-05-17 06:14:15,756 INFO    faster_whisper :: Processing audio with duration 00:01.920
+2026-05-17 06:14:30,121 INFO    faster_whisper :: Processing audio with duration 00:02.400
+2026-05-17 06:14:38,103 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 06:14:51,569 INFO    faster_whisper :: Processing audio with duration 00:02.280
+2026-05-17 06:14:53,339 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:14:56,219 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:15:38,884 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:15:55,470 INFO    faster_whisper :: Processing audio with duration 00:07.020
+2026-05-17 06:16:10,469 INFO    faster_whisper :: Processing audio with duration 00:07.680
+2026-05-17 06:17:10,439 INFO    faster_whisper :: Processing audio with duration 00:01.320
+2026-05-17 06:17:25,321 WARNING maahi.hud_server :: HUD outbound pump stopped: Unexpected ASGI message 'websocket.send', after sending 'websocket.close' or response already completed.
+2026-05-17 06:17:25,322 INFO    maahi.hud_server :: HUD WS disconnected
+2026-05-17 06:18:08,280 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:18:13,608 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 06:18:17,400 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:18:42,559 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 06:18:50,040 INFO    faster_whisper :: Processing audio with duration 00:01.410
+2026-05-17 06:19:29,851 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:19:42,662 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:19:50,131 INFO    faster_whisper :: Processing audio with duration 00:01.560
+2026-05-17 06:19:59,054 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 06:19:59,105 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 06:19:59,513 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 06:20:01,581 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 06:20:01,582 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 06:20:04,591 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 06:20:05,448 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-tiny.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 06:20:05,536 INFO    faster_whisper :: Processing audio with duration 00:02.370
+2026-05-17 06:20:12,072 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 06:20:14,053 INFO    faster_whisper :: Processing audio with duration 00:01.800
+2026-05-17 06:20:14,180 INFO    maahi :: Heard (no wake): 'my head.'
+2026-05-17 13:59:28,848 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 13:59:28,948 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 13:59:29,345 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 13:59:31,402 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 13:59:31,403 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 13:59:36,002 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 13:59:36,759 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-tiny.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 13:59:36,861 INFO    faster_whisper :: Processing audio with duration 00:02.100
+2026-05-17 13:59:37,060 INFO    maahi :: Heard (no wake): "Where's the time now?"
+2026-05-17 13:59:38,146 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 13:59:52,697 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 13:59:59,057 INFO    faster_whisper :: Processing audio with duration 00:06.210
+2026-05-17 14:00:23,722 INFO    faster_whisper :: Processing audio with duration 00:01.980
+2026-05-17 14:00:58,853 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:01:13,398 INFO    faster_whisper :: Processing audio with duration 00:01.740
+2026-05-17 14:01:13,519 INFO    maahi :: Heard (no wake): 'in my head.'
+2026-05-17 14:01:17,898 INFO    faster_whisper :: Processing audio with duration 00:01.950
+2026-05-17 14:01:18,012 INFO    maahi :: Heard (no wake): 'how are you doing?'
+2026-05-17 14:01:33,888 INFO    faster_whisper :: Processing audio with duration 00:01.800
+2026-05-17 14:01:45,587 INFO    faster_whisper :: Processing audio with duration 00:01.440
+2026-05-17 14:02:15,768 INFO    faster_whisper :: Processing audio with duration 00:01.530
+2026-05-17 14:02:20,603 INFO    faster_whisper :: Processing audio with duration 00:02.190
+2026-05-17 14:02:33,287 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:02:35,118 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:03:15,095 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:03:19,084 INFO    faster_whisper :: Processing audio with duration 00:01.350
+2026-05-17 14:03:25,474 INFO    faster_whisper :: Processing audio with duration 00:01.710
+2026-05-17 14:03:47,675 INFO    faster_whisper :: Processing audio with duration 00:01.320
+2026-05-17 14:03:52,114 INFO    faster_whisper :: Processing audio with duration 00:03.480
+2026-05-17 14:04:01,595 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 14:04:01,680 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 14:04:02,093 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 14:04:04,194 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 14:04:04,195 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 14:04:06,844 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-17 14:04:07,610 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-small.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 14:04:07,908 INFO    faster_whisper :: Processing audio with duration 00:02.460
+2026-05-17 14:04:08,721 INFO    maahi :: Heard (no wake): 'am i what is the time'
+2026-05-17 14:04:17,614 INFO    faster_whisper :: Processing audio with duration 00:01.710
+2026-05-17 14:04:18,375 INFO    maahi :: Wake matched on utterance: 'Mahi'
+2026-05-17 14:04:18,375 INFO    maahi :: Command: 'Mahi'
+2026-05-17 14:04:18,604 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 14:04:19,221 INFO    httpx :: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-tiny.en/revision/main "HTTP/1.1 200 OK"
+2026-05-17 14:04:19,299 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:19,594 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:20,584 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:21,574 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:22,564 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:23,554 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:24,544 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:25,534 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:26,524 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:27,514 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:28,504 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:29,494 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:30,484 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:31,475 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:32,464 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:33,454 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:34,444 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:35,434 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:36,424 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:37,414 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:38,404 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:39,394 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:40,384 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:41,374 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:42,364 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:43,354 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:44,335 INFO    httpx :: HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-17 14:04:44,347 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:45,334 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:46,324 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:47,314 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:48,304 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:49,294 INFO    faster_whisper :: Processing audio with duration 00:00.990
+2026-05-17 14:04:57,364 INFO    faster_whisper :: Processing audio with duration 00:02.370
+2026-05-17 14:04:58,257 INFO    maahi :: Heard (no wake): 'I want to know the time.'
+2026-05-17 14:05:09,575 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:06:08,944 INFO    faster_whisper :: Processing audio with duration 00:01.860
+2026-05-17 14:06:12,459 INFO    maahi :: Heard (no wake): 'Hey Mahe.'
+2026-05-17 14:06:12,460 INFO    faster_whisper :: Processing audio with duration 00:02.100
+2026-05-17 14:06:13,265 INFO    maahi :: Heard (no wake): 'open the chrome.'
+2026-05-17 14:06:38,945 INFO    faster_whisper :: Processing audio with duration 00:05.430
+2026-05-17 14:06:47,056 INFO    faster_whisper :: Processing audio with duration 00:01.410
+2026-05-17 14:06:47,863 INFO    maahi :: Heard (no wake): 'Thank you very much.'
+2026-05-17 14:07:00,527 INFO    faster_whisper :: Processing audio with duration 00:01.410
+2026-05-17 14:07:02,644 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:07:17,824 INFO    faster_whisper :: Processing audio with duration 00:02.340
+2026-05-17 14:07:24,274 INFO    faster_whisper :: Processing audio with duration 00:03.060
+2026-05-17 14:07:52,309 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:07:53,974 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:08:02,614 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:08:13,234 INFO    faster_whisper :: Processing audio with duration 00:02.070
+2026-05-17 14:08:32,464 INFO    faster_whisper :: Processing audio with duration 00:18.540
+2026-05-17 14:08:42,124 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:08:46,054 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:08:49,114 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:08:58,774 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:09:08,691 INFO    faster_whisper :: Processing audio with duration 00:09.660
+2026-05-17 14:09:18,290 INFO    faster_whisper :: Processing audio with duration 00:05.190
+2026-05-17 14:09:22,011 INFO    faster_whisper :: Processing audio with duration 00:03.240
+2026-05-17 14:09:27,020 INFO    faster_whisper :: Processing audio with duration 00:04.380
+2026-05-17 14:09:42,080 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:09:48,080 INFO    faster_whisper :: Processing audio with duration 00:03.540
+2026-05-17 14:09:53,990 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:09:56,420 INFO    faster_whisper :: Processing audio with duration 00:01.290
+2026-05-17 14:10:03,746 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 14:10:03,806 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 14:10:04,239 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 14:10:06,304 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 14:10:06,304 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 14:10:10,453 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-17 14:10:12,331 INFO    maahi :: Heard (no wake): 'What is the time?'
+2026-05-17 14:13:54,047 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:14:01,230 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:14:21,560 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-17 14:14:21,611 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-17 14:14:21,990 INFO    maahi.hud_server :: HUD WS connected
+2026-05-17 14:14:24,106 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-17 14:14:24,107 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-17 14:14:39,533 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:14:45,267 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-17 14:14:49,729 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:14:49,923 INFO    maahi :: Force-wake (HUD click): 'Mahi Upendaklom'
+2026-05-17 14:14:49,924 INFO    maahi :: Force-wake armed for 0.0s
+2026-05-17 14:14:49,924 INFO    maahi :: Command: 'Mahi Upendaklom'
+2026-05-17 14:14:49,980 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-17 14:15:05,104 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:15:15,447 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:15:23,100 INFO    maahi :: Wake matched: 'Mahi Kupanda Chrome browser.'
+2026-05-17 14:15:23,100 INFO    maahi :: Command: 'Kupanda Chrome browser.'
+2026-05-17 14:15:23,695 INFO    maahi.brain :: Tool call: open_app args={'name': 'Chrome'}
+2026-05-17 14:15:43,137 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:15:52,872 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-17 14:16:06,497 INFO    maahi :: Heard (no wake): 'Mayi open the music'
+2026-05-25 01:41:50,915 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-25 01:41:51,117 INFO    maahi :: Menu-bar helper spawned (pid=13722)
+2026-05-25 01:41:51,148 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:7b
+2026-05-25 01:41:51,826 INFO    maahi.hud_server :: HUD WS connected
+2026-05-25 01:41:54,743 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-25 01:41:54,777 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-25 01:41:54,777 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-25 01:43:04,143 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-25 01:43:04,219 INFO    maahi :: Menu-bar helper spawned (pid=15173)
+2026-05-25 01:43:04,257 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:7b
+2026-05-25 01:43:04,594 INFO    maahi.hud_server :: HUD WS connected
+2026-05-25 01:43:07,143 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-25 01:43:07,181 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-25 01:43:07,181 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-25 01:43:27,319 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-25 01:43:27,399 INFO    maahi :: Menu-bar helper spawned (pid=15941)
+2026-05-25 01:43:27,438 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:7b
+2026-05-25 01:43:27,759 INFO    maahi.hud_server :: HUD WS connected
+2026-05-25 01:43:30,016 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-25 01:43:30,039 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-25 01:43:30,039 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-25 01:43:31,771 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-25 01:43:42,119 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-25 01:43:45,661 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-25 01:43:52,428 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 13:25:27,241 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 13:30:14,585 INFO    maahi :: Maahi boot: starting
+2026-05-26 13:30:14,585 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 13:30:14,601 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 13:30:14,601 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 13:30:14,601 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 13:30:14,688 INFO    maahi :: Menu-bar helper spawned (pid=32022)
+2026-05-26 13:30:14,688 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 13:32:59,964 INFO    maahi :: Maahi boot: starting
+2026-05-26 13:32:59,964 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 13:32:59,977 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 13:32:59,977 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 13:32:59,978 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 13:33:00,060 INFO    maahi :: Menu-bar helper spawned (pid=41245)
+2026-05-26 13:33:00,061 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 13:33:00,061 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-05-26 13:33:00,063 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-05-26 13:33:00,064 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-05-26 13:33:00,064 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-05-26 13:33:01,696 INFO    maahi :: Caught signal 2 — shutting down
+2026-05-26 13:33:02,664 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-05-26 13:33:04,944 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-26 13:33:07,913 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-05-26 13:33:08,836 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 13:33:11,587 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-26 13:33:11,587 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-05-26 13:33:12,899 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:14b loaded
+2026-05-26 13:33:39,166 INFO    maahi :: Maahi boot: starting
+2026-05-26 13:33:39,166 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 13:33:39,182 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 13:33:39,183 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 13:33:39,183 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 13:33:39,272 INFO    maahi :: Menu-bar helper spawned (pid=43538)
+2026-05-26 13:33:39,273 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 13:33:39,273 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-05-26 13:33:39,274 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-05-26 13:33:39,274 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-05-26 13:33:39,275 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-05-26 13:33:39,367 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-05-26 13:33:39,401 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-26 13:33:39,425 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-05-26 13:33:39,720 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 13:33:42,465 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-26 13:33:42,466 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-05-26 13:33:43,545 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:14b loaded
+2026-05-26 13:34:02,355 INFO    maahi :: Maahi boot: starting
+2026-05-26 13:34:02,355 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 13:34:02,372 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 13:34:02,372 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 13:34:02,372 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 13:34:02,464 INFO    maahi :: Menu-bar helper spawned (pid=44840)
+2026-05-26 13:34:02,464 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 13:34:02,465 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-05-26 13:34:02,466 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-05-26 13:34:02,466 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-05-26 13:34:02,467 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-05-26 13:34:02,569 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-05-26 13:34:02,604 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:14b
+2026-05-26 13:34:02,641 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-05-26 13:34:02,951 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 13:34:05,830 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-26 13:34:05,830 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-05-26 13:34:06,612 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:14b loaded
+2026-05-26 13:34:07,075 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-26 13:34:24,210 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 13:34:39,087 INFO    maahi :: Text command: 'Set volume to 30.'
+2026-05-26 13:34:40,351 INFO    maahi :: Heard (no wake): 'Am I here?'
+2026-05-26 13:34:44,708 INFO    maahi :: Heard (no wake): 'Imahi'
+2026-05-26 13:34:45,719 INFO    maahi :: Heard (no wake): 'Cough.'
+2026-05-26 13:34:46,743 INFO    maahi :: Heard (no wake): 'Am I?'
+2026-05-26 13:34:52,229 INFO    maahi.brain :: Tool call: set_volume args={'level': 30}
+2026-05-26 13:34:53,320 INFO    maahi :: Heard (no wake): 'My what is the time?'
+2026-05-26 13:35:06,954 INFO    maahi :: Wake matched: 'Mahi, what is the time?'
+2026-05-26 13:35:06,955 INFO    maahi :: Command: 'what is the time?'
+2026-05-26 13:35:06,955 INFO    maahi.fast_path :: Fast-path: time
+2026-05-26 13:35:06,956 INFO    maahi :: Fast-path reply: "It's 1:35 PM."
+2026-05-26 13:35:07,011 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-26 13:35:16,010 INFO    maahi :: Heard (no wake): 'Can you tell me what are my next meetings?'
+2026-05-26 13:35:47,549 INFO    maahi :: Heard (no wake): 'Can you open the Chrome browser?'
+2026-05-26 13:36:04,244 INFO    maahi :: Wake matched: 'Hey Mahi, how are you doing?'
+2026-05-26 13:36:04,245 INFO    maahi :: Command: 'how are you doing?'
+2026-05-26 13:36:22,223 INFO    maahi :: Heard (no wake): 'Yeah, I just want to know.'
+2026-05-26 13:36:25,246 INFO    maahi :: Command-shape match: "What's the plan for the next day?"
+2026-05-26 13:36:25,247 INFO    maahi :: Command: "What's the plan for the next day?"
+2026-05-26 13:36:46,590 INFO    maahi :: Heard (no wake): 'Can we tell you tomorrow? What the fuck?'
+2026-05-26 13:36:54,200 INFO    maahi :: Heard (no wake): 'There is no meeting where I can see that.'
+2026-05-26 13:38:23,121 INFO    maahi.settings_api :: Settings updated: 1 fields changed
+2026-05-26 13:39:50,313 INFO    maahi :: Heard (no wake): 'Cough'
+2026-05-26 13:40:22,302 INFO    maahi :: Heard (no wake): 'My.'
+2026-05-26 13:40:23,801 INFO    maahi :: Heard (no wake): 'Can you open the Chrome?'
+2026-05-26 13:40:37,003 INFO    maahi :: Wake matched: 'Okay, fair enough, Mahi.'
+2026-05-26 13:40:37,003 INFO    maahi :: Command: 'Okay, fair enough, Mahi.'
+2026-05-26 13:40:49,989 INFO    maahi :: Heard (no wake): 'I need to open the chat GPT on my laptop.'
+2026-05-26 13:41:22,619 INFO    maahi :: Heard (no wake): 'Okay fuck off, just tell me what are the new things in the world as of now in terms of AI'
+2026-05-26 13:44:03,001 INFO    maahi :: Heard (no wake): 'Coughing.'
+2026-05-26 14:07:46,984 INFO    maahi :: Maahi boot: starting
+2026-05-26 14:07:46,984 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 14:07:47,002 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 14:07:47,003 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 14:07:47,003 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 14:07:47,090 INFO    maahi :: Menu-bar helper spawned (pid=11129)
+2026-05-26 14:07:47,090 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 14:07:47,091 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-05-26 14:07:47,092 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-05-26 14:07:47,092 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-05-26 14:07:47,093 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-05-26 14:07:47,187 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-05-26 14:07:47,217 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-05-26 14:07:47,275 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-05-26 14:07:50,542 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-26 14:07:50,689 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-26 14:07:50,689 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-05-26 14:07:55,936 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-26 14:08:28,038 INFO    maahi :: Wake matched: 'Heh mahi'
+2026-05-26 14:08:28,038 INFO    maahi :: Command: 'Heh mahi'
+2026-05-26 14:08:28,040 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:08:28,043 ERROR   maahi.brain :: Ollama call failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-26 14:08:28,094 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-26 14:09:57,938 INFO    maahi :: Maahi boot: starting
+2026-05-26 14:09:57,938 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 14:09:57,953 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 14:09:57,953 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 14:09:57,953 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 14:09:58,033 INFO    maahi :: Menu-bar helper spawned (pid=15697)
+2026-05-26 14:09:58,034 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 14:09:58,034 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-05-26 14:09:58,036 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-05-26 14:09:58,036 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-05-26 14:09:58,036 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-05-26 14:09:58,122 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-05-26 14:09:58,149 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-05-26 14:09:58,211 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-05-26 14:09:58,486 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 14:10:01,036 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-26 14:10:01,036 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-05-26 14:10:02,395 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-26 14:10:02,529 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-05-26 14:10:12,584 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 14:10:33,801 INFO    maahi :: Heard (no wake): 'and Mahih.'
+2026-05-26 14:10:34,815 INFO    maahi :: Wake matched: 'Mahi'
+2026-05-26 14:10:40,784 INFO    maahi :: Command: 'Mahi, can you open the music?'
+2026-05-26 14:10:40,785 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:10:40,837 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-26 14:10:43,707 INFO    maahi.brain :: Tool call: spotify args={'command': 'play'}
+2026-05-26 14:10:44,242 INFO    maahi.brain :: Tool call: spotify args={'command': 'play'}
+2026-05-26 14:10:44,779 INFO    maahi.brain :: Tool call: spotify args={'command': 'play'}
+2026-05-26 14:10:59,859 INFO    maahi :: Heard (no wake): 'music.'
+2026-05-26 14:11:03,836 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 14:11:03,839 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 14:11:12,764 INFO    maahi :: Command-shape match: 'Can you open Apple Music?'
+2026-05-26 14:11:12,764 INFO    maahi :: Command: 'Can you open Apple Music?'
+2026-05-26 14:11:12,765 INFO    maahi.fast_path :: Fast-path: open_app
+2026-05-26 14:11:12,845 INFO    maahi :: Fast-path reply: 'Opening Apple Music.'
+2026-05-26 14:11:20,608 INFO    maahi :: Command-shape match: 'Just find a song, Bajan 2 and play it.'
+2026-05-26 14:11:20,608 INFO    maahi :: Command: 'Just find a song, Bajan 2 and play it.'
+2026-05-26 14:11:20,609 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:11:23,767 INFO    maahi.brain :: Tool call: spotify args={'command': 'search:Bajan 2'}
+2026-05-26 14:11:24,292 INFO    maahi.brain :: Tool call: open_app args={'name': 'Spotify'}
+2026-05-26 14:11:24,866 INFO    maahi.brain :: Tool call: spotify args={'command': 'search:Bajan 2'}
+2026-05-26 14:12:24,729 INFO    maahi :: Heard (no wake): 'I see the.'
+2026-05-26 14:12:29,681 INFO    maahi :: Heard (no wake): 'Hey, CD.'
+2026-05-26 14:12:35,216 INFO    maahi :: Heard (no wake): 'Yes.'
+2026-05-26 14:12:40,864 INFO    maahi :: Wake matched: 'Mahi.'
+2026-05-26 14:12:44,085 INFO    maahi :: Command: 'Can you tell me about my meetings next?'
+2026-05-26 14:12:44,085 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:12:44,280 INFO    maahi.brain :: Tool call: calendar_today args={}
+2026-05-26 14:13:04,652 INFO    maahi.brain :: Tool call: calendar_today args={}
+2026-05-26 14:13:14,763 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 14:13:42,727 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 14:13:50,510 INFO    maahi :: Command-shape match: "Tell me what's happening in the market as of now in terms of AI development."
+2026-05-26 14:13:50,510 INFO    maahi :: Command: "Tell me what's happening in the market as of now in terms of AI development."
+2026-05-26 14:13:50,511 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:13:50,839 INFO    maahi.brain :: Tool call: web_search args={'query': 'AI development current trends', 'max_results': 6}
+2026-05-26 14:13:53,040 INFO    primp :: response: https://grokipedia.com/api/typeahead?query=AI+development+current+trends&limit=1 200
+2026-05-26 14:13:57,434 INFO    ddgs.ddgs :: Error in engine wikipedia: TimeoutException(TimeoutError('error sending request for url (https://en.wikipedia.org/w/api.php?action=opensearch&profile=fuzzy&limit=1&search=AI%20development%20current%20trends) > operation timed out'))
+2026-05-26 14:13:58,135 INFO    primp :: response: https://www.startpage.com/ 200
+2026-05-26 14:13:58,315 INFO    primp :: response: https://search.brave.com/search?q=AI+development+current+trends&source=web 200
+2026-05-26 14:13:58,880 INFO    primp :: response: https://www.startpage.com/sp/search 200
+2026-05-26 14:15:12,494 INFO    maahi :: Heard (no wake): 'And Mahi, can you send a WhatsApp message to somebody  or email?'
+2026-05-26 14:17:10,560 INFO    maahi :: Wake matched: 'Mahi, can you send a WhatsApp message to somebody or email?'
+2026-05-26 14:17:10,560 INFO    maahi :: Command: 'can you send a WhatsApp message to somebody or email?'
+2026-05-26 14:17:10,561 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:17:31,194 INFO    maahi :: Command-shape match: 'Tell me couple of my latest email.'
+2026-05-26 14:17:31,194 INFO    maahi :: Command: 'Tell me couple of my latest email.'
+2026-05-26 14:17:31,195 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:17:31,452 INFO    maahi.brain :: Tool call: mail_unread args={'limit': 2}
+2026-05-26 14:25:10,449 INFO    maahi :: Heard (no wake): 'Cough'
+2026-05-26 14:25:10,451 WARNING maahi.hud_server :: HUD outbound pump stopped: Unexpected ASGI message 'websocket.send', after sending 'websocket.close' or response already completed.
+2026-05-26 14:25:10,452 INFO    maahi.hud_server :: HUD WS disconnected
+2026-05-26 14:25:23,214 INFO    maahi :: Maahi boot: starting
+2026-05-26 14:25:23,214 INFO    maahi :: Maahi boot: starting HUD server
+2026-05-26 14:25:23,231 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-26 14:25:23,232 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-05-26 14:25:23,232 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-05-26 14:25:23,320 INFO    maahi :: Menu-bar helper spawned (pid=43279)
+2026-05-26 14:25:23,321 INFO    maahi :: Maahi boot: arming global hotkey
+2026-05-26 14:25:23,321 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-05-26 14:25:23,322 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-05-26 14:25:23,322 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-05-26 14:25:23,322 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-05-26 14:25:23,423 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-05-26 14:25:23,423 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-05-26 14:25:23,515 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-05-26 14:25:23,822 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 14:25:26,515 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-26 14:25:26,515 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-05-26 14:25:27,934 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-05-26 14:25:31,635 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-05-26 14:25:55,801 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 14:26:03,279 INFO    maahi :: Heard (no wake): 'Hi Mahil.'
+2026-05-26 14:26:04,410 INFO    maahi :: Heard (no wake): 'Then open Apple Music and play Bajan 2.'
+2026-05-26 14:26:09,050 INFO    maahi :: Heard (no wake): 'Tamahi.'
+2026-05-26 14:26:27,277 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-26 14:26:32,101 INFO    maahi :: Force-wake (HUD click): 'Hi Mahi.'
+2026-05-26 14:26:32,101 INFO    maahi :: Force-wake armed for 0.0s
+2026-05-26 14:26:32,101 INFO    maahi :: Command: 'Hi Mahi.'
+2026-05-26 14:26:32,103 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:26:32,156 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-05-26 14:26:47,344 INFO    maahi :: Heard (no wake): 'bhajan 2 song'
+2026-05-26 14:26:57,432 INFO    maahi.hud_server :: HUD WS connected
+2026-05-26 14:27:13,216 INFO    maahi :: Wake matched: 'Mahi'
+2026-05-26 14:27:17,009 INFO    maahi :: Command: 'open-eple music and play bajan too.'
+2026-05-26 14:27:17,009 INFO    maahi.brain :: Route: local (router=auto)
+2026-05-26 14:27:21,730 INFO    maahi.brain :: Tool call: apple_music args={'command': 'play_song', 'query': 'Bajan 2'}
+2026-05-26 14:27:52,175 INFO    maahi :: Heard (no wake): "It's already there in the folder called Garba, playlist called Garba.  There you will find Bajan 2."
+2026-06-06 16:00:10,540 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:00:10,540 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:00:10,557 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:00:10,557 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:00:10,557 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:00:10,736 INFO    maahi :: Menu-bar helper spawned (pid=87921)
+2026-06-06 16:00:10,737 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:00:10,737 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:00:10,738 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:00:10,738 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:00:10,739 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:00:11,033 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:00:11,149 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:00:11,154 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:00:11,528 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:00:14,663 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:00:14,664 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:00:17,591 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-06-06 16:00:34,244 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:00:34,244 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:00:34,261 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:00:34,261 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:00:34,261 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:00:34,338 INFO    maahi :: Menu-bar helper spawned (pid=88948)
+2026-06-06 16:00:34,338 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:00:34,338 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:00:34,340 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:00:34,340 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:00:34,340 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:00:34,434 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:00:34,445 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:00:34,514 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:00:34,798 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:00:37,076 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:00:37,076 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:00:37,723 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-06-06 16:00:49,109 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:00:49,109 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:00:49,126 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:00:49,126 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:00:49,126 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:00:49,229 INFO    maahi :: Menu-bar helper spawned (pid=89886)
+2026-06-06 16:00:49,232 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:00:49,233 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:00:49,249 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:00:49,250 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:00:49,258 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:00:49,363 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:00:49,405 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:00:49,412 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:00:49,714 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:00:51,984 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:00:51,984 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:00:52,487 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-06-06 16:04:05,424 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:04:05,424 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:04:05,436 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:04:05,436 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:04:05,436 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:04:05,510 INFO    maahi :: Menu-bar helper spawned (pid=95657)
+2026-06-06 16:04:05,510 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:04:05,510 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:04:05,511 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:04:05,511 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:04:05,512 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:04:05,596 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:04:05,622 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:04:05,685 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:04:05,929 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:04:07,732 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:04:07,732 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:04:08,140 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-06-06 16:04:15,522 INFO    maahi :: Force-wake armed for 6.0s
+2026-06-06 16:04:23,402 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-06-06 16:04:30,626 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:04:58,874 INFO    maahi :: Heard (no wake): 'Peace be upon you.'
+2026-06-06 16:04:59,747 INFO    maahi :: Wake matched: 'Hey Mahi, what are my next meetings?'
+2026-06-06 16:04:59,747 INFO    maahi :: Command: 'what are my next meetings?'
+2026-06-06 16:04:59,749 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:04:59,804 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-06-06 16:05:03,310 INFO    maahi.brain :: Tool call: calendar_upcoming args={'minutes': 30}
+2026-06-06 16:05:26,607 INFO    maahi :: Heard (no wake): 'Can you take a screenshot?'
+2026-06-06 16:05:40,498 INFO    maahi :: Force-wake armed for 6.0s
+2026-06-06 16:31:01,009 INFO    maahi :: Heard (no wake): 'Here, Mahih.'
+2026-06-06 16:31:13,756 INFO    maahi :: Wake matched: 'Hey, Mahi.'
+2026-06-06 16:31:13,756 INFO    maahi :: Command: 'Hey, Mahi.'
+2026-06-06 16:31:13,758 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:31:28,676 INFO    maahi :: Command-shape match: 'Open Apple Music and play a song.'
+2026-06-06 16:31:28,676 INFO    maahi :: Command: 'Open Apple Music and play a song.'
+2026-06-06 16:31:28,676 INFO    maahi.fast_path :: Fast-path: open_app
+2026-06-06 16:31:28,705 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:31:29,057 INFO    maahi.brain :: Tool call: apple_music args={'command': 'play_song', 'query': 'Bajan 2'}
+2026-06-06 16:31:45,378 INFO    maahi :: Heard (no wake): 'yeah play any other song'
+2026-06-06 16:32:25,593 INFO    maahi :: Wake matched: "Hey, Ma'hi."
+2026-06-06 16:32:25,593 INFO    maahi :: Command: "Hey, Ma'hi."
+2026-06-06 16:32:25,595 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:32:34,940 INFO    maahi :: Command-shape match: 'Tell me my last two emails.'
+2026-06-06 16:32:34,940 INFO    maahi :: Command: 'Tell me my last two emails.'
+2026-06-06 16:32:34,941 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:32:35,204 INFO    maahi.brain :: Tool call: mail_unread args={'limit': 2}
+2026-06-06 16:33:10,027 INFO    maahi :: Command-shape match: 'play some music on Apple Play'
+2026-06-06 16:33:10,027 INFO    maahi :: Command: 'play some music on Apple Play'
+2026-06-06 16:33:10,028 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:33:10,288 INFO    maahi.brain :: Tool call: apple_music args={'command': 'current'}
+2026-06-06 16:33:11,041 INFO    maahi.brain :: Tool call: apple_music args={'command': 'play_song', 'query': 'Bajan 2'}
+2026-06-06 16:33:26,274 INFO    maahi :: Heard (no wake): 'something else.'
+2026-06-06 16:33:36,908 INFO    maahi :: Force-wake armed for 6.0s
+2026-06-06 16:34:05,876 INFO    maahi :: Heard (no wake): 'Maybe play.'
+2026-06-06 16:34:09,569 INFO    maahi :: Heard (no wake): 'Heartbreak.'
+2026-06-06 16:34:51,037 INFO    maahi :: Heard (no wake): "Let's see the latest update on AI development in the world."
+2026-06-06 16:37:53,565 INFO    maahi :: Command-shape match: 'play any music on Apple Music'
+2026-06-06 16:37:53,565 INFO    maahi :: Command: 'play any music on Apple Music'
+2026-06-06 16:37:53,567 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:37:53,890 INFO    maahi.brain :: Tool call: apple_music args={'command': 'play'}
+2026-06-06 16:38:08,082 INFO    maahi :: Heard (no wake): 'Ati Paslam.'
+2026-06-06 16:38:36,900 INFO    maahi :: Command-shape match: 'Play Guru Randa Vassam.'
+2026-06-06 16:38:36,900 INFO    maahi :: Command: 'Play Guru Randa Vassam.'
+2026-06-06 16:38:36,902 INFO    maahi.brain :: Route: local (router=auto)
+2026-06-06 16:38:37,326 INFO    maahi.brain :: Tool call: apple_music args={'command': 'play_song', 'query': 'Guru Randa Vassam'}
+2026-06-06 16:38:55,944 INFO    maahi :: Caught signal 15 — shutting down
+2026-06-06 16:38:56,584 INFO    maahi :: Heard (no wake): "So, that's it.  Thank you very much.  You're welcome.  You're welcome.  All right.  Love, logical.  Thank you."
+2026-06-06 16:39:14,057 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:39:14,057 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:39:14,074 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:39:14,074 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:39:14,074 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:39:14,162 INFO    maahi :: Menu-bar helper spawned (pid=42744)
+2026-06-06 16:39:14,163 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:39:14,163 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:39:14,164 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:39:14,164 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:39:14,164 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:39:14,255 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:39:14,280 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:39:14,336 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:39:14,601 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:39:16,836 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-06-06 16:39:16,934 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:39:16,934 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:39:19,538 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded
+2026-06-06 16:39:23,154 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-06-06 16:39:29,680 INFO    maahi :: Force-wake armed for 6.0s
+2026-06-06 16:39:47,119 INFO    maahi.listener :: Whisper model 'tiny.en' warmed
+2026-06-06 16:39:47,119 INFO    maahi.listener :: Loading faster-whisper model 'small.en' on auto (int8)...
+2026-06-06 16:39:53,357 INFO    maahi :: Heard (no wake): 'Go ahead and focus it.'
+2026-06-06 16:39:53,474 INFO    maahi :: Heard (no wake): 'This may most time be successful.'
+2026-06-06 16:39:54,517 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:39:54,518 WARNING maahi.hud_server :: HUD inbound pump stopped: WebSocket is not connected. Need to call "accept" first.
+2026-06-06 16:40:18,190 INFO    maahi.listener :: Whisper model 'small.en' warmed
+2026-06-06 16:40:48,013 INFO    maahi :: Heard (no wake): 'I will tell you that I am everything.'
+2026-06-06 16:40:48,014 WARNING maahi.hud_server :: HUD outbound pump stopped: Cannot call "send" once a close message has been sent.
+2026-06-06 16:40:48,014 INFO    maahi.hud_server :: HUD WS disconnected
+2026-06-06 16:41:01,485 INFO    maahi :: Heard (no wake): 'turn on the light.'
+2026-06-06 16:41:05,355 INFO    maahi :: Heard (no wake): 'There you go, sir.'
+2026-06-06 16:41:10,778 INFO    maahi :: Heard (no wake): 'turn off the light.'
+2026-06-06 16:41:14,832 INFO    maahi :: Heard (no wake): 'Okay, sir.'
+2026-06-06 16:41:23,249 INFO    maahi :: Heard (no wake): 'that I was not aware that AI will be coming in in future.'
+2026-06-06 16:41:47,170 INFO    maahi :: Heard (no wake): 'So at the time when we start down the start up and we start to bring the door over it, everybody.'
+2026-06-06 16:42:01,107 INFO    maahi :: Heard (no wake): "I don't know, I'm sure that's how it goes.  I'm just going to continue some more time."
+2026-06-06 16:51:22,181 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:51:22,181 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:51:22,197 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:51:22,197 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:51:22,197 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:51:22,286 INFO    maahi :: Menu-bar helper spawned (pid=66067)
+2026-06-06 16:51:22,287 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:51:22,287 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:51:22,289 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:51:22,290 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:51:22,290 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:51:22,392 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:51:22,404 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:51:22,476 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:51:22,789 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:51:24,996 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-06-06 16:51:25,105 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:51:25,105 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:51:27,640 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded

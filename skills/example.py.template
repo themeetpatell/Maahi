@@ -1,0 +1,86 @@
+"""Example skill pack for Maahi.
+
+To activate:
+
+    mkdir -p ~/.maahi/skills
+    cp skills/example.py.template ~/.maahi/skills/example.py
+    # then restart Maahi
+
+Maahi will pick this up on next boot and you can say:
+
+    "Hey Maahi, roll a die."
+    "Hey Maahi, what time is it in Tokyo?"
+
+Each tool must:
+- Be a callable returning a dict.
+- Be registered in the module-level TOOLS tuple.
+- Have a clear one-line description (the brain only sees that).
+
+Tools that fail to import or raise will be skipped, not crash Maahi.
+"""
+from __future__ import annotations
+
+import random
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from maahi.tools.registry import Tool
+
+
+# ----- TOOL 1: roll a die -----
+
+def roll_die(sides: int = 6) -> dict:
+    """Roll an n-sided die. Default 6."""
+    sides = max(2, int(sides))
+    value = random.randint(1, sides)
+    return {"ok": True, "sides": sides, "value": value}
+
+
+# ----- TOOL 2: time in another city -----
+
+_TIMEZONES = {
+    "tokyo":         "Asia/Tokyo",
+    "london":        "Europe/London",
+    "new york":      "America/New_York",
+    "san francisco": "America/Los_Angeles",
+    "sydney":        "Australia/Sydney",
+    "mumbai":        "Asia/Kolkata",
+    "dubai":         "Asia/Dubai",
+}
+
+
+def time_in(city: str) -> dict:
+    """Current local time in the given city."""
+    key = (city or "").lower().strip()
+    tz_name = _TIMEZONES.get(key)
+    if tz_name is None:
+        return {
+            "ok": False,
+            "error": f"Unknown city: {city}. Known: {sorted(_TIMEZONES)}",
+        }
+    now = datetime.now(ZoneInfo(tz_name))
+    return {
+        "ok": True,
+        "city": city,
+        "timezone": tz_name,
+        "iso": now.isoformat(timespec="minutes"),
+        "human": now.strftime("%I:%M %p, %A %B %d"),
+    }
+
+
+# ----- REGISTRATION -----
+
+TOOLS = (
+    Tool(
+        name="roll_die",
+        description="Roll an n-sided die. Returns a random integer 1..n.",
+        func=roll_die,
+        arg_schema={"sides": "int: number of faces (default 6)"},
+    ),
+    Tool(
+        name="time_in",
+        description="Get the current local time in a known city.",
+        func=time_in,
+        arg_schema={"city": "str: city name e.g. 'tokyo'"},
+    ),
+)

@@ -1,0 +1,39 @@
+{
+  "name": "maahi-superapp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:web": "vite",
+    "dev:api": "nodemon server/index.js",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server/index.js",
+    "prod": "npm run build && node server/index.js",
+    "pm2:start": "npx pm2 start ecosystem.config.cjs --env production",
+    "pm2:stop": "npx pm2 stop maahi",
+    "pm2:restart": "npx pm2 restart maahi",
+    "pm2:logs": "npx pm2 logs maahi"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0",
+    "better-sqlite3": "^12.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "googleapis": "^171.4.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sqlite-vec": "^0.1.9"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9",
+    "pm2": "^6.0.14",
+    "vite": "^6.2.0"
+  }
+}

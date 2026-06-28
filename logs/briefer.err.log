@@ -1,0 +1,48 @@
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 69 spoken chars, 212 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-17.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 70 spoken chars, 240 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-18.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 71 spoken chars, 269 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-19.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 178 spoken chars, 1072 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-20.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 165 spoken chars, 989 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-21.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 167 spoken chars, 1177 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-22.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 134 spoken chars, 817 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-23.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 132 spoken chars, 815 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-24.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.

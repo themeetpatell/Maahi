@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Maahi</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="data:," />
+<style>
+  :root {
+    --bg: rgba(8, 12, 22, 0.62);
+    --bg-strong: rgba(8, 12, 22, 0.94);
+    --border: rgba(120, 220, 255, 0.22);
+    --accent: #6df0ff;
+    --user: #ffd66e;
+    --maahi: #b6f0ff;
+    --tool: #c8ffb1;
+    --error: #ff7a7a;
+    --warn: #ffaa55;
+    --ok: #8be38b;
+    --shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+    --radius: 16px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background: transparent; color: #e8f4ff;
+    font-family: var(--font); overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+  }
+  body.standalone {
+    background:
+      radial-gradient(circle at 30% 20%, rgba(80,180,255,0.18), transparent 55%),
+      radial-gradient(circle at 80% 90%, rgba(140,90,255,0.18), transparent 55%),
+      #06080f;
+  }
+
+  #dot {
+    position: fixed; bottom: 16px; right: 16px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 14px rgba(109,240,255,0.85), 0 0 36px rgba(109,240,255,0.45);
+    animation: breathe 2.4s ease-in-out infinite;
+    cursor: pointer; z-index: 10;
+    transition: opacity 0.25s ease, transform 0.2s ease;
+  }
+  #dot.muted  { background: #6f7a8a; box-shadow: 0 0 6px rgba(120,130,145,0.4); animation: none; }
+  #dot.paused { background: var(--warn); box-shadow: 0 0 8px rgba(255,170,85,0.7); animation: none; }
+  #dot.active { animation: pulse 0.9s ease-in-out infinite; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50%      { transform: scale(1.2); opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1);   box-shadow: 0 0 14px rgba(109,240,255,0.95), 0 0 36px rgba(109,240,255,0.55); }
+    50%      { transform: scale(1.4); box-shadow: 0 0 24px rgba(109,240,255,1.0),  0 0 60px rgba(109,240,255,0.70); }
+  }
+
+  #panel {
+    position: fixed; inset: 8px;
+    background: var(--bg);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    opacity: 1; pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  body.compact #panel { opacity: 0; pointer-events: none; transform: translateY(6px) scale(0.985); }
+  body.compact #panel.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+  body.standalone #panel { background: var(--bg-strong); }
+
+  .titlebar {
+    height: 28px; flex: 0 0 auto;
+    display: flex; align-items: center;
+    padding: 0 10px;
+    -webkit-app-region: drag; cursor: grab;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .titlebar .name {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); opacity: 0.85;
+  }
+  .titlebar .tabs { display: flex; gap: 4px; margin-left: 14px; -webkit-app-region: no-drag; }
+  .titlebar .tab {
+    font-size: 10.5px; padding: 2px 8px; border-radius: 8px;
+    color: #aac6d8; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .titlebar .tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .titlebar .tab.active { color: #06080f; background: var(--accent); font-weight: 600; }
+  .titlebar .expand {
+    margin-left: 6px; padding: 1px 7px;
+    border-radius: 6px; cursor: pointer;
+    color: var(--accent); font-size: 13px;
+    border: 1px solid rgba(109,240,255,0.32);
+    -webkit-app-region: no-drag; line-height: 1.2;
+    transition: background 0.15s;
+  }
+  .titlebar .expand:hover { background: rgba(109,240,255,0.12); }
+  .titlebar .state {
+    margin-left: auto; font-size: 10.5px; color: #aac6d8;
+    font-variant-numeric: tabular-nums; -webkit-app-region: no-drag;
+  }
+  .titlebar .state .led {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: #5a6a78;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .state.idle      .led { background: #5a6a78; }
+  .state.listening .led { background: #ffd66e; box-shadow: 0 0 6px #ffd66e; }
+  .state.thinking  .led { background: #c89bff; box-shadow: 0 0 6px #c89bff; }
+  .state.speaking  .led { background: #6df0ff; box-shadow: 0 0 6px #6df0ff; }
+  .state.acting    .led { background: #c8ffb1; box-shadow: 0 0 6px #c8ffb1; }
+  .state.paused    .led { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+  .state.error     .led { background: var(--error); box-shadow: 0 0 6px var(--error); }
+
+  .view { flex: 1 1 auto; display: none; overflow-y: auto; padding: 8px 12px 6px; }
+  .view.active { display: block; }
+
+  #live { font-size: 12.5px; line-height: 1.42; }
+  #live::-webkit-scrollbar { width: 6px; }
+  #live::-webkit-scrollbar-thumb { background: rgba(120,220,255,0.18); border-radius: 3px; }
+  .placeholder {
+    color: #7e94a4; font-size: 12px; padding: 12px 0;
+    text-align: center; opacity: 0.9; line-height: 1.5;
+  }
+  .placeholder b { color: var(--accent); font-weight: 600; }
+  .line { margin-bottom: 4px; }
+  .line .who {
+    display: inline-block; width: 46px;
+    color: #7e94a4; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    vertical-align: top;
+  }
+  .line.user  .text { color: var(--user); }
+  .line.maahi .text { color: var(--maahi); }
+  .line.tool  .text { color: var(--tool); font-style: italic; opacity: 0.92; }
+  .line.heard .text { color: #7e94a4; font-style: italic; font-size: 11.5px; }
+  .line.error .text { color: var(--error); }
+  .line .text { display: inline-block; max-width: calc(100% - 56px); word-wrap: break-word; }
+
+  .err-card {
+    margin: 6px 0; padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 122, 122, 0.08);
+    border: 1px solid rgba(255, 122, 122, 0.32);
+  }
+  .err-card .where {
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--error); font-weight: 600;
+  }
+  .err-card .msg { margin-top: 3px; font-size: 12px; color: #ffd2d2; word-wrap: break-word; }
+  .err-card .fix-row { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .err-card button {
+    font: inherit; font-size: 10.5px;
+    padding: 3px 9px; border-radius: 7px;
+    background: var(--error); color: #1a0606;
+    border: 0; cursor: pointer; font-weight: 600;
+  }
+  .err-card button.ghost {
+    background: transparent; color: #ffd2d2;
+    border: 1px solid rgba(255, 122, 122, 0.4);
+  }
+
+  #footer {
+    flex: 0 0 auto; display: flex; gap: 10px;
+    padding: 6px 12px 10px;
+    align-items: stretch;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    min-height: 40px;
+  }
+  #vision {
+    width: 72px; height: 42px; border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(120,220,255,0.12);
+    object-fit: cover; flex: 0 0 auto;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  #vision.show { opacity: 1; }
+  #ticker {
+    flex: 1 1 auto; align-self: center;
+    font-size: 11px; color: #9fb6c5;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  #ticker .tool { color: var(--tool); }
+  #ticker .arg  { color: #c0d2dd; opacity: 0.7; }
+
+  #suggestions {
+    flex: 0 0 auto;
+    padding: 6px 12px 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex; gap: 6px; flex-wrap: wrap;
+    background: rgba(255,255,255,0.015);
+  }
+  #suggestions .hint {
+    font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: #7e94a4;
+    margin-right: 6px; align-self: center;
+  }
+  .chip {
+    font-size: 10.5px; padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(109,240,255,0.06);
+    border: 1px solid rgba(109,240,255,0.18);
+    color: #c8e8f0; cursor: pointer;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+  }
+  .chip:hover { background: rgba(109,240,255,0.16); color: #fff; }
+  .chip:active { transform: translateY(1px); }
+  body.offline .chip {
+    opacity: 0.35; cursor: not-allowed;
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08); color: #7e94a4;
+  }
+  body.offline .chip:hover { background: rgba(255,255,255,0.04); color: #7e94a4; }
+  body.offline #suggestions .hint::after {
+    content: " (offline)"; color: var(--warn);
+  }
+
+  #settings { font-size: 12px; }
+  #settings h3 {
+    margin: 14px 0 6px; font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; opacity: 0.85;
+  }
+  #settings h3:first-of-type { margin-top: 2px; }
+  #settings .row {
+    display: flex; align-items: center;
+    gap: 10px; margin: 5px 0;
+  }
+  #settings label {
+    flex: 0 0 130px; color: #aac6d8; font-size: 11px;
+  }
+  #settings input[type=text],
+  #settings input[type=email],
+  #settings input[type=number],
+  #settings select,
+  #settings textarea {
+    flex: 1 1 auto; min-width: 0;
+    background: rgba(0,0,0,0.32);
+    border: 1px solid rgba(120,220,255,0.18);
+    border-radius: 6px; color: #e8f4ff;
+    font: inherit; font-size: 11px;
+    padding: 4px 7px;
+  }
+  #settings textarea { min-height: 60px; resize: vertical; }
+  #settings input[type=range] { flex: 1 1 auto; }
+  #settings .help {
+    font-size: 10px; color: #7e94a4;
+    margin-left: 130px; margin-bottom: 4px;
+  }
+  #settings button {
+    font: inherit; font-size: 11px;
+    background: var(--accent); color: #06080f;
+    border: 0; border-radius: 7px;
+    padding: 5px 14px; cursor: pointer; font-weight: 600;
+  }
+  #settings button.ghost {
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  #settings button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #settingsStatus {
+    margin-top: 14px; padding: 8px;
+    font-size: 11px; color: var(--ok);
+    border-radius: 8px; display: none;
+  }
+  #settingsStatus.show { display: block; background: rgba(139,227,139,0.08); }
+  #settingsStatus.error { color: var(--error); background: rgba(255,122,122,0.08); }
+
+  #today h3 {
+    margin: 4px 0 8px; font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+  }
+  #today .controls { display: flex; gap: 8px; margin-bottom: 10px; }
+  #today button {
+    font: inherit; font-size: 11px;
+    border-radius: 7px; padding: 4px 10px;
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent); cursor: pointer;
+  }
+  #today button.danger { color: var(--error); border-color: var(--error); }
+  #today button.pause  { color: var(--warn);  border-color: var(--warn); }
+  #today .turn {
+    font-size: 11.5px; padding: 4px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+  }
+  #today .turn .who {
+    font-size: 9.5px; color: #7e94a4;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-right: 8px;
+  }
+  #today .empty {
+    color: #7e94a4; font-size: 11.5px;
+    text-align: center; padding: 20px 0;
+  }
+
+  #wizard {
+    position: fixed; inset: 0;
+    background: rgba(6, 8, 15, 0.85);
+    backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  #wizard.show { display: flex; }
+  #wizardCard {
+    max-width: 380px; width: calc(100% - 24px);
+    background: var(--bg-strong);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  #wizardCard h2 { margin: 0 0 4px; font-size: 14px; color: var(--accent); letter-spacing: 0.04em; }
+  #wizardCard p.sub { margin: 0 0 14px; font-size: 11.5px; color: #aac6d8; }
+  .perm-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .perm-row:first-of-type { border-top: 0; }
+  .perm-row .stat {
+    width: 14px; height: 14px; border-radius: 50%;
+    flex: 0 0 auto;
+  }
+  .perm-row .stat.granted { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .perm-row .stat.denied  { background: var(--error); }
+  .perm-row .stat.unknown { background: #6f7a8a; }
+  .perm-row .label { flex: 1 1 auto; font-size: 12px; }
+  .perm-row .label small { display: block; font-size: 10px; color: #7e94a4; margin-top: 1px; }
+  .perm-row button {
+    font: inherit; font-size: 10.5px;
+    border-radius: 6px; padding: 3px 9px;
+    border: 1px solid var(--accent); color: var(--accent);
+    background: transparent; cursor: pointer; flex: 0 0 auto;
+  }
+  .perm-row button.done { color: var(--ok); border-color: var(--ok); }
+  #wizardActions {
+    margin-top: 14px; display: flex; justify-content: space-between; gap: 8px;
+  }
+  #wizardActions button {
+    font: inherit; font-size: 11px;
+    padding: 6px 14px; border-radius: 7px; border: 0;
+    cursor: pointer; font-weight: 600;
+  }
+  #wizardSkip { background: transparent; color: #aac6d8; border: 1px solid rgba(255,255,255,0.15); }
+  #wizardRecheck { background: var(--accent); color: #06080f; }
+</style>
+</head>
+<body>
+  <div id="dot" title="Maahi — click to wake"></div>
+
+  <div id="panel">
+    <div class="titlebar">
+      <span class="name">MAAHI</span>
+      <div class="tabs">
+        <span class="tab active" data-view="live">Live</span>
+        <span class="tab" data-view="today">Today</span>
+        <span class="tab" data-view="settings">Settings</span>
+      </div>
+      <span class="expand" id="expandBtn" title="Open Command Center (full screen)">⤢</span>
+      <span id="stateBadge" class="state idle"><span class="led"></span><span id="stateLabel">idle</span></span>
+    </div>
+
+    <div id="live" class="view active">
+      <div class="placeholder">
+        Listening for <b>"Hey Maahi"</b>.<br>
+        Or click the cyan dot to force-wake.
+      </div>
+    </div>
+
+    <div id="today" class="view">
+      <h3>Today</h3>
+      <div class="controls">
+        <button id="pauseBtn" class="pause">Pause listening</button>
+        <button id="clearBtn" class="danger">Delete today's transcript</button>
+      </div>
+      <div id="turns"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div id="settings" class="view">
+      <h3>Who is Maahi for?</h3>
+      <div class="row"><label>Your name</label><input type="text" id="cfg_owner_name"/></div>
+      <div class="row"><label>Email</label><input type="email" id="cfg_owner_email"/></div>
+      <div class="row"><label>Bio (system context)</label><textarea id="cfg_owner_bio"></textarea></div>
+
+      <h3>Voice</h3>
+      <div class="row">
+        <label>Voice</label>
+        <select id="cfg_tts_voice"></select>
+        <button id="auditionBtn" class="ghost">Test</button>
+      </div>
+      <div class="row">
+        <label>Rate (wpm)</label>
+        <input type="range" id="cfg_tts_rate" min="120" max="280" step="5"/>
+        <span id="rateVal" style="flex:0 0 36px; text-align:right; font-size:11px; color:#aac6d8;">200</span>
+      </div>
+      <div class="row">
+        <label>Stream</label>
+        <input type="checkbox" id="cfg_tts_stream" style="flex:0 0 auto; transform:scale(1.2);"/>
+        <span style="font-size:11px;color:#7e94a4;">speak as soon as the first sentence arrives</span>
+      </div>
+
+      <h3>Brain</h3>
+      <div class="row">
+        <label>Model</label>
+        <select id="cfg_brain_model"></select>
+        <button id="probeBtn" class="ghost">Probe</button>
+      </div>
+      <div class="help" id="probeResult">—</div>
+
+      <h3>Wake word</h3>
+      <div class="row">
+        <label>Phrases</label>
+        <input type="text" id="cfg_wake_phrases" placeholder="hey maahi, maahi"/>
+      </div>
+      <div class="help">Comma-separated. Lowercase only.</div>
+      <div class="row">
+        <label>Silence cutoff (s)</label>
+        <input type="number" id="cfg_wake_silence" min="0.3" max="2.5" step="0.1"/>
+      </div>
+
+      <h3>Privacy &amp; control</h3>
+      <div class="row">
+        <label>Pause listening</label>
+        <input type="checkbox" id="cfg_listen_paused" style="flex:0 0 auto; transform:scale(1.2);"/>
+      </div>
+      <div class="row">
+        <label>Confirm clicks</label>
+        <input type="checkbox" id="cfg_control_confirm" style="flex:0 0 auto; transform:scale(1.2);"/>
+        <span style="font-size:11px;color:#7e94a4;">ask before Maahi clicks for you</span>
+      </div>
+      <div class="row">
+        <label>Proactive alerts</label>
+        <input type="checkbox" id="cfg_proactive_enabled" style="flex:0 0 auto; transform:scale(1.2);"/>
+      </div>
+
+      <div style="margin-top: 14px; display:flex; gap:8px;">
+        <button id="saveBtn">Save</button>
+        <button id="permBtn" class="ghost">Check permissions…</button>
+      </div>
+      <div id="settingsStatus"></div>
+    </div>
+
+    <div id="footer">
+      <img id="vision" alt="" />
+      <div id="ticker">—</div>
+    </div>
+
+    <div id="suggestions">
+      <span class="hint">Try saying</span>
+    </div>
+  </div>
+
+  <div id="wizard">
+    <div id="wizardCard">
+      <h2>Set up Maahi</h2>
+      <p class="sub">Maahi needs a few macOS permissions before she can hear you and run your day. Click "Grant" on each — it opens the right pane in System Settings.</p>
+      <div id="permRows"></div>
+      <div id="wizardActions">
+        <button id="wizardSkip">Do it later</button>
+        <button id="wizardRecheck">Re-check</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const dot         = document.getElementById("dot");
+  const panel       = document.getElementById("panel");
+  const live        = document.getElementById("live");
+  const stateBadge  = document.getElementById("stateBadge");
+  const stateLabel  = document.getElementById("stateLabel");
+  const vision      = document.getElementById("vision");
+  const ticker      = document.getElementById("ticker");
+  const suggestions = document.getElementById("suggestions");
+  const tabs        = document.querySelectorAll(".tab");
+  const views       = document.querySelectorAll(".view");
+
+  const MAX_LINES   = 60;
+  const COLLAPSE_MS = 8000;
+  let collapseTimer = null;
+  let lastSeq       = 0;
+  let placeholderRemoved = false;
+  let isPaused = false;
+
+  if (window.innerWidth > 460 || window.innerHeight > 280) {
+    document.body.classList.add("standalone");
+  } else {
+    document.body.classList.add("compact");
+  }
+
+  // ----- tabs -----
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.view;
+      tabs.forEach((t) => t.classList.toggle("active", t === tab));
+      views.forEach((v) => v.classList.toggle("active", v.id === target));
+      openPanel();
+      if (target === "today")    refreshTranscript();
+      if (target === "settings") loadSettings();
+    });
+  });
+
+  // ----- live + helpers -----
+  function clearPlaceholder() {
+    if (placeholderRemoved) return;
+    const ph = live.querySelector(".placeholder");
+    if (ph) ph.remove();
+    placeholderRemoved = true;
+  }
+  function setState(name) {
+    stateBadge.className = "state " + name;
+    stateLabel.textContent = name;
+    if (name === "idle" || name === "paused") dot.classList.remove("active");
+    else { dot.classList.add("active"); openPanel(); }
+    dot.classList.toggle("paused", name === "paused");
+  }
+  function openPanel() {
+    panel.classList.add("open");
+    clearTimeout(collapseTimer);
+    if (document.body.classList.contains("compact")) {
+      collapseTimer = setTimeout(() => panel.classList.remove("open"), COLLAPSE_MS);
+    }
+  }
+  function appendLine(kind, who, text) {
+    clearPlaceholder();
+    const div = document.createElement("div");
+    div.className = "line " + kind;
+    div.innerHTML = `<span class="who"></span><span class="text"></span>`;
+    div.firstElementChild.textContent = who;
+    div.lastElementChild.textContent = text;
+    live.appendChild(div);
+    while (live.children.length > MAX_LINES) live.removeChild(live.firstChild);
+    live.scrollTop = live.scrollHeight;
+  }
+  function appendErrorCard(where, message) {
+    clearPlaceholder();
+    const card = document.createElement("div");
+    card.className = "err-card";
+    const wDiv = document.createElement("div");
+    wDiv.className = "where"; wDiv.textContent = where;
+    const mDiv = document.createElement("div");
+    mDiv.className = "msg"; mDiv.textContent = message;
+    const fix = document.createElement("div");
+    fix.className = "fix-row";
+    pickFixPanes(where, message).forEach((p) => {
+      const b = document.createElement("button");
+      b.textContent = p.label;
+      b.onclick = () => p.pane ? openPermissionPane(p.pane)
+                              : tabs[2].click();  // settings tab
+      fix.appendChild(b);
+    });
+    const dismiss = document.createElement("button");
+    dismiss.className = "ghost"; dismiss.textContent = "Dismiss";
+    dismiss.onclick = () => card.remove();
+    fix.appendChild(dismiss);
+    card.append(wDiv, mDiv, fix);
+    live.appendChild(card);
+    while (live.children.length > MAX_LINES) live.removeChild(live.firstChild);
+    live.scrollTop = live.scrollHeight;
+  }
+  function pickFixPanes(where, message) {
+    const txt = (where + " " + (message || "")).toLowerCase();
+    const out = [];
+    if (txt.includes("mic") || txt.includes("audio") || txt.includes("portaudio"))
+      out.push({label: "Grant Microphone", pane: "mic"});
+    if (txt.includes("accessib") || txt.includes("system events"))
+      out.push({label: "Grant Accessibility", pane: "accessibility"});
+    if (txt.includes("calendar") || txt.includes("mail") || txt.includes("messages")
+        || txt.includes("reminders") || txt.includes("automation") || txt.includes("1743"))
+      out.push({label: "Grant Automation", pane: "automation"});
+    if (txt.includes("screen") || txt.includes("screencapture"))
+      out.push({label: "Grant Screen Recording", pane: "screen"});
+    if (txt.includes("ollama") || txt.includes("brain"))
+      out.push({label: "Open Settings → Brain", pane: null});
+    return out;
+  }
+  function setTicker(html) { ticker.innerHTML = html || "—"; }
+  function showVisionThumb(b64) {
+    if (!b64) { vision.classList.remove("show"); vision.removeAttribute("src"); return; }
+    vision.src = "data:image/jpeg;base64," + b64;
+    vision.classList.add("show");
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
+  function handleEvent(ev) {
+    if (typeof ev.seq === "number") {
+      if (ev.seq <= lastSeq && !ev.replay) return;
+      lastSeq = ev.seq;
+    }
+    const p = ev.payload || {};
+    switch (ev.type) {
+      case "state":           setState(p.state || "idle"); break;
+      case "heard":           appendLine("heard", "stt", `heard: "${p.text}"`); openPanel(); break;
+      case "transcript":
+        if (p.speaker === "user")  appendLine("user",  "you",   p.text);
+        if (p.speaker === "maahi") appendLine("maahi", "maahi", p.text);
+        openPanel(); break;
+      case "tool_start": {
+        const args = p.args ? JSON.stringify(p.args) : "";
+        setTicker(`<span class="tool">${escapeHtml(p.name)}</span> <span class="arg">${escapeHtml(args)}</span>`);
+        appendLine("tool", "tool", `→ ${p.name}`); openPanel(); break;
+      }
+      case "tool_end": {
+        const ok = p.result && p.result.ok !== false;
+        setTicker(ok
+          ? `${escapeHtml(p.name)} <span class="arg">✓</span>`
+          : `${escapeHtml(p.name)} <span class="arg">— failed</span>`);
+        if (!ok && p.result && p.result.error)
+          appendErrorCard(p.name, p.result.error);
+        break;
+      }
+      case "vision_capture":  showVisionThumb(p.thumb); openPanel(); break;
+      case "control_action": {
+        const kind = p.kind || "act";
+        let detail = "";
+        if (kind === "move" || kind === "click") detail = `(${p.x},${p.y})`;
+        else if (kind === "type") detail = `${p.chars} chars`;
+        else if (kind === "key")  detail = p.combo;
+        else if (kind === "ax")   detail = `${p.app}/${p.action}`;
+        setTicker(`<span class="tool">${escapeHtml(kind)}</span> <span class="arg">${escapeHtml(detail)}</span>`);
+        break;
+      }
+      case "speak_chunk":     openPanel(); break;
+      case "error":
+        setState("error");
+        appendErrorCard(p.where || "error", p.message || "Unknown error");
+        break;
+      case "listening_set":
+        isPaused = !!p.paused;
+        const pl = document.getElementById("cfg_listen_paused");
+        if (pl) pl.checked = isPaused;
+        if (pauseBtn) pauseBtn.textContent = isPaused ? "Resume listening" : "Pause listening";
+        break;
+    }
+  }
+
+  // ----- websocket -----
+  let ws = null;
+  let reconnectMs = 600;
+  function connect() {
+    const url = `ws://${location.host}/ws`;
+    ws = new WebSocket(url);
+    ws.onopen = () => {
+      reconnectMs = 600;
+      dot.classList.remove("muted");
+      document.body.classList.remove("offline");
+      openPanel();
+    };
+    ws.onmessage = (m) => { try { handleEvent(JSON.parse(m.data)); } catch (e) {} };
+    ws.onclose = () => {
+      dot.classList.add("muted");
+      document.body.classList.add("offline");
+      setTimeout(connect, reconnectMs);
+      reconnectMs = Math.min(reconnectMs * 1.6, 5000);
+    };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  }
+  connect();
+
+  dot.addEventListener("click", () => {
+    openPanel();
+    if (ws && ws.readyState === 1)
+      ws.send(JSON.stringify({ type: "wake_request", payload: {} }));
+  });
+
+  // Expand → open the full Command Center dashboard.
+  // Prefer the native pywebview JS bridge (spawns a real macOS window).
+  // Fall back to opening the dashboard URL in a new browser tab so the
+  // button works even when the HUD is loaded standalone in a browser.
+  const expandBtn = document.getElementById("expandBtn");
+  if (expandBtn) {
+    expandBtn.addEventListener("click", async () => {
+      try {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.open_dashboard) {
+          await window.pywebview.api.open_dashboard();
+          return;
+        }
+      } catch (e) { /* fall through to browser fallback */ }
+      window.open("/dashboard", "_blank");
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") panel.classList.remove("open");
+  });
+
+  // ----- try-saying -----
+  const SUGGESTIONS_MORNING = [
+    "What's on my calendar today?",
+    "Read me my unread emails.",
+    "What are my open reminders?",
+    "What time is it?",
+    "Open Slack.",
+  ];
+  const SUGGESTIONS_AFTERNOON = [
+    "Search my brain for ICP.",
+    "What did I write about Soulmap?",
+    "Take a screenshot.",
+    "Set volume to 30.",
+    "Search the web for UAE corporate tax deadlines.",
+  ];
+  const SUGGESTIONS_EVENING = [
+    "Append to my daily note: shipped Maahi v2.",
+    "Remind me to call Surbhi tomorrow at 9am.",
+    "Play Spotify.",
+    "What's on my calendar tomorrow?",
+    "Remember that my flight is on the 12th.",
+  ];
+  function renderSuggestions() {
+    const hour = new Date().getHours();
+    const pool = hour < 12 ? SUGGESTIONS_MORNING
+               : hour < 17 ? SUGGESTIONS_AFTERNOON
+               : SUGGESTIONS_EVENING;
+    suggestions.querySelectorAll(".chip").forEach((c) => c.remove());
+    pool.slice(0, 4).forEach((phrase) => {
+      const chip = document.createElement("span");
+      chip.className = "chip"; chip.textContent = phrase;
+      chip.onclick = () => simulatePhrase(phrase);
+      suggestions.appendChild(chip);
+    });
+  }
+  async function simulatePhrase(phrase) {
+    // Don't render the user line ourselves — the text-command worker
+    // emits a transcript("user", text) event for us via the bus, which
+    // shows up over the WS like any other turn. Avoids duplicates.
+    if (!ws || ws.readyState !== 1) {
+      appendLine("error", "err", "Maahi is offline. Run `bash start.sh`.");
+      return;
+    }
+    try {
+      const r = await fetch("/api/command", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text: phrase}),
+      });
+      if (!r.ok) appendLine("error", "err", "Command rejected: HTTP " + r.status);
+    } catch (e) {
+      appendLine("error", "err", "Could not submit: " + e);
+    }
+  }
+  renderSuggestions();
+  setInterval(renderSuggestions, 60 * 60 * 1000);
+
+  // ----- settings -----
+  const saveBtn      = document.getElementById("saveBtn");
+  const auditionBtn  = document.getElementById("auditionBtn");
+  const probeBtn     = document.getElementById("probeBtn");
+  const permBtn      = document.getElementById("permBtn");
+  const probeResult  = document.getElementById("probeResult");
+  const settingsStat = document.getElementById("settingsStatus");
+  const rateInput    = document.getElementById("cfg_tts_rate");
+  const rateVal      = document.getElementById("rateVal");
+  rateInput.addEventListener("input", () => rateVal.textContent = rateInput.value);
+
+  async function loadSettings() {
+    try {
+      const r = await fetch("/api/config"); const d = await r.json();
+      const c = d.config;
+      document.getElementById("cfg_owner_name").value  = c.owner?.name ?? "";
+      document.getElementById("cfg_owner_email").value = c.owner?.email ?? "";
+      document.getElementById("cfg_owner_bio").value   = c.owner?.bio ?? "";
+      const voiceSel = document.getElementById("cfg_tts_voice");
+      if (!voiceSel.dataset.loaded) await loadVoices(c.tts?.voice);
+      voiceSel.value = c.tts?.voice ?? "";
+      rateInput.value = c.tts?.rate ?? 200;
+      rateVal.textContent = rateInput.value;
+      document.getElementById("cfg_tts_stream").checked = !!c.tts?.stream;
+
+      const modelSel = document.getElementById("cfg_brain_model");
+      if (!modelSel.dataset.loaded) await loadModels(c.brain?.model);
+      modelSel.value = c.brain?.model ?? "";
+
+      document.getElementById("cfg_wake_phrases").value = (c.wake?.phrases ?? []).join(", ");
+      document.getElementById("cfg_wake_silence").value = c.wake?.silence_seconds ?? 0.6;
+      document.getElementById("cfg_control_confirm").checked =
+        !!c.control?.require_confirm_for_clicks;
+      document.getElementById("cfg_proactive_enabled").checked =
+        c.proactive?.enabled !== false;
+    } catch (e) {
+      flashStatus("Could not load settings: " + e, true);
+    }
+  }
+  async function loadVoices(current) {
+    const sel = document.getElementById("cfg_tts_voice");
+    sel.innerHTML = "";
+    try {
+      const r = await fetch("/api/voices"); const d = await r.json();
+      (d.voices || []).forEach((v) => {
+        const o = document.createElement("option");
+        o.value = v.name; o.textContent = `${v.name} (${v.locale})`;
+        sel.appendChild(o);
+      });
+      sel.dataset.loaded = "1";
+    } catch (e) {
+      if (current) {
+        const o = document.createElement("option");
+        o.value = current; o.textContent = current;
+        sel.appendChild(o);
+      }
+    }
+  }
+  async function loadModels(current) {
+    const sel = document.getElementById("cfg_brain_model");
+    sel.innerHTML = "";
+    const candidates = new Set([
+      current, "qwen2.5:7b", "qwen2.5:14b", "llama3.2:3b", "llama3.3:70b",
+    ].filter(Boolean));
+    try {
+      const r = await fetch("/api/brain/probe"); const d = await r.json();
+      (d.models_installed || []).forEach((m) => candidates.add(m));
+    } catch (e) {}
+    [...candidates].forEach((m) => {
+      const o = document.createElement("option");
+      o.value = m; o.textContent = m;
+      sel.appendChild(o);
+    });
+    sel.dataset.loaded = "1";
+  }
+  saveBtn.addEventListener("click", async () => {
+    const phrases = document.getElementById("cfg_wake_phrases").value
+      .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    const patch = {
+      owner: {
+        name:  document.getElementById("cfg_owner_name").value,
+        email: document.getElementById("cfg_owner_email").value,
+        bio:   document.getElementById("cfg_owner_bio").value,
+      },
+      tts: {
+        voice:  document.getElementById("cfg_tts_voice").value,
+        rate:   Number(rateInput.value),
+        stream: document.getElementById("cfg_tts_stream").checked,
+      },
+      brain: { model: document.getElementById("cfg_brain_model").value },
+      wake:  {
+        phrases,
+        silence_seconds: Number(document.getElementById("cfg_wake_silence").value),
+      },
+      control:   { require_confirm_for_clicks: document.getElementById("cfg_control_confirm").checked },
+      proactive: { enabled: document.getElementById("cfg_proactive_enabled").checked },
+    };
+    try {
+      const r = await fetch("/api/config", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ patch }),
+      });
+      const d = await r.json();
+      if (r.ok && d.ok) flashStatus(`Saved (${d.written} fields). Some changes need a restart.`);
+      else flashStatus("Save failed: " + (d.detail || d.error || "unknown"), true);
+    } catch (e) {
+      flashStatus("Save failed: " + e, true);
+    }
+  });
+  auditionBtn.addEventListener("click", async () => {
+    const voice = document.getElementById("cfg_tts_voice").value;
+    if (!voice) return;
+    await fetch("/api/audition", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ voice }),
+    });
+  });
+  probeBtn.addEventListener("click", async () => {
+    probeResult.textContent = "Pinging…";
+    try {
+      const r = await fetch("/api/brain/probe"); const d = await r.json();
+      probeResult.textContent = d.ok
+        ? `OK — ${d.model} responded in ${d.elapsed_ms}ms`
+        : `Failed: ${d.error}`;
+    } catch (e) {
+      probeResult.textContent = "Could not reach the brain probe endpoint.";
+    }
+  });
+  permBtn.addEventListener("click", () => openWizard(true));
+  function flashStatus(text, isError) {
+    settingsStat.textContent = text;
+    settingsStat.classList.add("show");
+    settingsStat.classList.toggle("error", !!isError);
+    setTimeout(() => settingsStat.classList.remove("show"), 6000);
+  }
+
+  // ----- today -----
+  const turnsDiv  = document.getElementById("turns");
+  const pauseBtn  = document.getElementById("pauseBtn");
+  const clearBtn  = document.getElementById("clearBtn");
+
+  async function refreshTranscript() {
+    try {
+      const r = await fetch("/api/transcript/today");
+      const d = await r.json();
+      turnsDiv.innerHTML = "";
+      if (!d.turns || !d.turns.length) {
+        turnsDiv.innerHTML = '<div class="empty">No turns yet today.</div>';
+        return;
+      }
+      d.turns.forEach((t) => {
+        const div = document.createElement("div");
+        div.className = "turn";
+        const who = document.createElement("span");
+        who.className = "who"; who.textContent = t.role || "";
+        const txt = document.createElement("span");
+        txt.textContent = t.content || "";
+        div.append(who, txt);
+        turnsDiv.appendChild(div);
+      });
+    } catch (e) {
+      turnsDiv.innerHTML = '<div class="empty">Could not load.</div>';
+    }
+  }
+  pauseBtn.addEventListener("click", async () => {
+    const next = !isPaused;
+    await fetch("/api/listening", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ paused: next }),
+    });
+    isPaused = next;
+    pauseBtn.textContent = next ? "Resume listening" : "Pause listening";
+    document.getElementById("cfg_listen_paused").checked = next;
+  });
+  clearBtn.addEventListener("click", async () => {
+    if (!confirm("Delete today's transcript? This cannot be undone.")) return;
+    await fetch("/api/transcript/clear", {method: "POST"});
+    refreshTranscript();
+  });
+  document.getElementById("cfg_listen_paused").addEventListener("change", async (e) => {
+    await fetch("/api/listening", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ paused: e.target.checked }),
+    });
+    isPaused = e.target.checked;
+    pauseBtn.textContent = isPaused ? "Resume listening" : "Pause listening";
+  });
+
+  // ----- permission wizard -----
+  const wizard = document.getElementById("wizard");
+  const permRows = document.getElementById("permRows");
+  const PERM_META = [
+    {key: "mic",           label: "Microphone",        sub: "Required so Maahi can hear you."},
+    {key: "accessibility", label: "Accessibility",     sub: "Lets Maahi control the keyboard."},
+    {key: "automation",    label: "Automation",        sub: "Calendar / Mail / Reminders / Messages access."},
+    {key: "screen",        label: "Screen Recording",  sub: "Required for vision tools (screen reading)."},
+    {key: "disk",          label: "Full Disk Access",  sub: "So Maahi can read your Mail and Calendar databases."},
+  ];
+  async function openPermissionPane(pane) {
+    if (!pane) return;
+    await fetch("/api/permissions/open", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ pane }),
+    });
+  }
+  async function openWizard(manual) {
+    permRows.innerHTML = '<div class="empty" style="color:#aac6d8;padding:8px 0;">Checking…</div>';
+    wizard.classList.add("show");
+    await refreshPerms();
+    if (!manual && allGranted()) {
+      wizard.classList.remove("show");
+      localStorage.setItem("maahi.wizard.completed", String(Date.now()));
+    }
+  }
+  function allGranted() {
+    const stats = [...permRows.querySelectorAll(".stat")];
+    return stats.length > 0 && stats.every((s) => s.classList.contains("granted"));
+  }
+  async function refreshPerms() {
+    try {
+      const r = await fetch("/api/permissions"); const d = await r.json();
+      const s = d.status || {};
+      permRows.innerHTML = "";
+      PERM_META.forEach((meta) => {
+        const status = s[meta.key] || "unknown";
+        const row = document.createElement("div");
+        row.className = "perm-row";
+        const stat = document.createElement("div");
+        stat.className = "stat " + status;
+        const lab = document.createElement("div");
+        lab.className = "label";
+        lab.innerHTML = `${meta.label}<small>${meta.sub}</small>`;
+        const btn = document.createElement("button");
+        if (status === "granted") {
+          btn.textContent = "✓ Granted"; btn.classList.add("done"); btn.disabled = true;
+        } else {
+          btn.textContent = "Grant";
+          btn.onclick = () => openPermissionPane(meta.key);
+        }
+        row.append(stat, lab, btn);
+        permRows.appendChild(row);
+      });
+    } catch (e) {
+      permRows.innerHTML = '<div class="empty" style="color:var(--error);padding:8px 0;">Could not probe permissions.</div>';
+    }
+  }
+  document.getElementById("wizardSkip").addEventListener("click", () => {
+    wizard.classList.remove("show");
+    localStorage.setItem("maahi.wizard.skipped", String(Date.now()));
+  });
+  document.getElementById("wizardRecheck").addEventListener("click", refreshPerms);
+
+  if (!localStorage.getItem("maahi.wizard.skipped")
+      && !localStorage.getItem("maahi.wizard.completed")) {
+    setTimeout(() => openWizard(false), 800);
+  }
+
+  // ----- URL hash routing -----
+  // Menu-bar app opens /#settings or /#permissions to deep-link into a view.
+  function applyHashRoute() {
+    const hash = (location.hash || "").replace(/^#/, "").toLowerCase();
+    if (!hash) return;
+    if (hash === "permissions") { openWizard(true); return; }
+    const targetTab = [...tabs].find((t) => t.dataset.view === hash);
+    if (targetTab) targetTab.click();
+  }
+  window.addEventListener("hashchange", applyHashRoute);
+  applyHashRoute();
+})();
+</script>
+</body>
+</html>

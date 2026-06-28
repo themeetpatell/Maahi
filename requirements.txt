@@ -1,0 +1,42 @@
+# Maahi — Python dependencies
+# Tested on Python 3.11+ on Apple Silicon.
+
+# ----- audio -----
+sounddevice>=0.4.6
+webrtcvad>=2.0.10
+numpy>=1.26
+
+# ----- STT -----
+faster-whisper>=1.0.3
+
+# ----- TTS -----
+piper-tts>=1.2.0     # neural local TTS; falls back to macOS `say` if missing
+
+# ----- LLM client -----
+httpx>=0.27
+
+# ----- web -----
+ddgs>=6.1.0          # DuckDuckGo search (maintained fork)
+
+# ----- config -----
+PyYAML>=6.0.1
+
+# ----- HUD (Jarvis dashboard) -----
+fastapi>=0.110
+uvicorn>=0.29
+websockets>=12
+pywebview>=5.0
+pyobjc-framework-Cocoa>=10.0   # pywebview backend on macOS
+
+# ----- vision + control -----
+pyautogui>=0.9.54
+Pillow>=10.0
+
+# ----- menu bar -----
+rumps>=0.4.0          # macOS NSStatusItem wrapper; optional but recommended
+
+# ----- global hotkey -----
+pynput>=1.7.6        # system-wide keyboard listener for force-wake
+
+# ----- optional -----
+# pytesseract>=0.3.10   # uncomment for screen OCR (Tesseract path)

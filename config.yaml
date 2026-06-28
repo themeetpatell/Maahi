@@ -1,0 +1,141 @@
+# Maahi config. Edit via the Settings panel in the HUD —
+# values written here are preserved, but comments will be stripped
+# on the next round-trip.
+
+owner:
+  name: Meet
+  email: meet@finanshels.com
+  bio: 'Founder and CEO. Builds AI-native ventures.
+
+    Companies: Finanshels (UAE accounting SaaS), BiggDate (dating/relationships),
+
+    Soulmap, ZeroHuman, StartupOS, BiggFam, MediCore HMS, Biggbizz.
+
+    Operates from Dubai. Family man (wife: Maahi — yes, the assistant''s namesake
+
+    is a tribute, not a coincidence). Optimizes for execution velocity,
+
+    AI-native systems, and brutal clarity.
+
+    '
+wake:
+  phrases:
+  - hey maahi
+  - maahi
+  - hey mahi
+  engine: whisper_loop
+  vad_threshold: 0.5
+  # Endpointing delay: how long Maahi waits after you stop talking before
+  # she acts. Lower = snappier. 0.45 still tolerates natural mid-command
+  # pauses without cutting you off.
+  silence_seconds: 0.45
+stt:
+  model: small.en
+  # Fast gating/fast-path model — tiny.en is ~3x quicker than small.en and
+  # plenty accurate for wake words + "open X / volume / time". The heavier
+  # `model` above is only used when a command escalates to the LLM.
+  fast_model: tiny.en
+  device: auto
+  compute_type: int8
+  language: en
+brain:
+  # Hybrid: fast LOCAL handles tools + snappy replies; OPENAI handles
+  # reasoning / general knowledge ("act powerful"). Routing:
+  #   auto   — keyword + length heuristic picks per utterance (default)
+  #   local  — force Ollama (offline, with tools)
+  #   openai — force OpenAI (needs OPENAI_API_KEY env var)
+  router: auto
+  provider: ollama
+  host: http://localhost:11434
+  # Smaller = faster TTFT. qwen2.5:3b is the speed sweet spot for tools.
+  # Bigger picks: qwen2.5:7b (better) or qwen2.5:14b (heaviest).
+  model: qwen2.5:3b
+  temperature: 0.4
+  max_tokens: 256
+  max_iterations: 4
+  # Keep the model resident so the first command after an idle gap doesn't
+  # pay a cold-load. "-1" = never unload; "30m"/"1h" also valid.
+  keep_alive: 30m
+  # Cloud brain. Set OPENAI_API_KEY in your shell env.
+  openai_model: gpt-4o-mini
+  openai_host: https://api.openai.com/v1
+tts:
+  engine: piper
+  piper_voice: ''
+  voice: Samantha
+  rate: 230
+  stream: true
+vault:
+  path: /Users/themeetpatel/Startups/My brain
+  memory_dir: /Users/themeetpatel/Startups/My brain/maahi/memory
+  daily_notes_dir: 10 Daily
+logging:
+  level: INFO
+  path: /Users/themeetpatel/Startups/Maahi/logs/maahi.log
+hud:
+  enabled: true
+  port: 7421
+  width: 420
+  height: 220
+  x: 40
+  y: -60
+  always_on_top: true
+  transparent: true
+  collapse_seconds: 8
+vision:
+  model: qwen2.5vl:7b
+  max_image_side: 1280
+  jpeg_quality: 80
+  scratch_dir: /Users/themeetpatel/Startups/Maahi/logs/vision
+control:
+  enabled: true
+  require_confirm_for_clicks: false
+  cursor_smooth_pxps: 1800
+proactive:
+  enabled: true
+  poll_seconds: 60
+  lead_minutes: 5
+  idle_minutes: 45
+  end_of_day_hour: 21
+  end_of_day_minute: 30
+  focus_drift_minutes: 0
+vision_watcher:
+  enabled: false
+  interval_seconds: 45
+  buffer_size: 6
+  privacy_apps:
+  - 1Password
+  - Bitwarden
+  - Messages
+  - Mail
+  - Signal
+hotkey:
+  enabled: true
+  combo: cmd+option+m
+hud_auth:
+  token: ''
+barge_in:
+  enabled: true
+  stop_words:
+  - maahi stop
+  - stop talking
+  - stop maahi
+  - be quiet
+  - shut up
+shell_allowlist:
+- ls
+- pwd
+- echo
+- date
+- uptime
+- df
+- du
+- uname
+- whoami
+- ps
+- open
+- say
+- pmset
+- system_profiler
+- networksetup
+- ioreg

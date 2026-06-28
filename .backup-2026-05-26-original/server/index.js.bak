@@ -1,0 +1,467 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 8787;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA = path.join(__dirname, "..", "data");
+const FILES = {
+  memory: path.join(DATA, "memories.json"),
+  tasks: path.join(DATA, "tasks.json"),
+  convos: path.join(DATA, "conversations.json"),
+  notes: path.join(DATA, "notes.json"),
+};
+
+// ─── Data helpers ────────────────────────────────────────────
+async function ensureData() {
+  await fs.mkdir(DATA, { recursive: true });
+  const defaults = {
+    [FILES.memory]: { facts: {}, categories: {} },
+    [FILES.tasks]: { tasks: [] },
+    [FILES.convos]: { conversations: [] },
+    [FILES.notes]: { notes: [] },
+  };
+  for (const [file, fallback] of Object.entries(defaults)) {
+    try { await fs.access(file); } catch { await fs.writeFile(file, JSON.stringify(fallback, null, 2)); }
+  }
+}
+
+async function readJson(f, fallback) {
+  try { return JSON.parse(await fs.readFile(f, "utf8")); } catch { return fallback; }
+}
+async function writeJson(f, v) { await fs.writeFile(f, JSON.stringify(v, null, 2), "utf8"); }
+
+// ─── Memory ──────────────────────────────────────────────────
+function tokenize(s) {
+  return String(s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(t => t.length > 2);
+}
+function relevance(q, t) {
+  const qs = new Set(tokenize(q)); if (!qs.size) return 0;
+  const ts = tokenize(t); if (!ts.length) return 0;
+  let h = 0; for (const w of ts) if (qs.has(w)) h++;
+  return h / Math.max(qs.size, 1);
+}
+async function getMemoryContext(query, topN = 8) {
+  const mem = await readJson(FILES.memory, { facts: {} });
+  const entries = Object.entries(mem.facts || {});
+  if (!entries.length) return "";
+  return entries
+    .map(([k, v]) => ({ k, v: typeof v === "object" ? v.value : v, score: relevance(query, `${k} ${typeof v === "object" ? v.value : v}`) }))
+    .sort((a, b) => b.score - a.score).slice(0, topN)
+    .map(x => `- ${x.k}: ${x.v}`).join("\n");
+}
+async function saveMemoryFact(key, value, category = "general") {
+  const mem = await readJson(FILES.memory, { facts: {}, categories: {} });
+  mem.facts[key] = { value, category, updatedAt: new Date().toISOString() };
+  if (!mem.categories[category]) mem.categories[category] = [];
+  if (!mem.categories[category].includes(key)) mem.categories[category].push(key);
+  await writeJson(FILES.memory, mem);
+}
+async function getAllMemory() { return readJson(FILES.memory, { facts: {}, categories: {} }); }
+async function clearMemory() { await writeJson(FILES.memory, { facts: {}, categories: {} }); }
+
+// ─── Tasks ───────────────────────────────────────────────────
+async function addTask(text, priority = "medium", deadline = null) {
+  const d = await readJson(FILES.tasks, { tasks: [] });
+  const t = { id: Date.now(), text, priority, deadline, done: false, createdAt: new Date().toISOString() };
+  d.tasks.push(t); await writeJson(FILES.tasks, d); return t;
+}
+async function listTasks(filter = "open") {
+  const d = await readJson(FILES.tasks, { tasks: [] });
+  if (filter === "all") return d.tasks.slice(-25);
+  if (filter === "done") return d.tasks.filter(t => t.done).slice(-25);
+  return d.tasks.filter(t => !t.done).slice(-25);
+}
+async function completeTask(taskId) {
+  const d = await readJson(FILES.tasks, { tasks: [] });
+  const t = d.tasks.find(x => x.id === taskId);
+  if (t) { t.done = true; t.completedAt = new Date().toISOString(); }
+  await writeJson(FILES.tasks, d); return t;
+}
+
+// ─── Conversations ───────────────────────────────────────────
+async function saveConversation(id, title, messages) {
+  const d = await readJson(FILES.convos, { conversations: [] });
+  const idx = d.conversations.findIndex(c => c.id === id);
+  const c = { id, title, messages, updatedAt: new Date().toISOString() };
+  if (idx >= 0) d.conversations[idx] = c; else d.conversations.push(c);
+  if (d.conversations.length > 50) d.conversations = d.conversations.slice(-50);
+  await writeJson(FILES.convos, d);
+}
+async function listConversations() {
+  const d = await readJson(FILES.convos, { conversations: [] });
+  return d.conversations.map(c => ({ id: c.id, title: c.title, updatedAt: c.updatedAt, count: c.messages?.length || 0 }));
+}
+async function getConversation(id) {
+  const d = await readJson(FILES.convos, { conversations: [] });
+  return d.conversations.find(c => c.id === id) || null;
+}
+async function deleteConversation(id) {
+  const d = await readJson(FILES.convos, { conversations: [] });
+  d.conversations = d.conversations.filter(c => c.id !== id);
+  await writeJson(FILES.convos, d);
+}
+
+// ─── Notes ───────────────────────────────────────────────────
+async function saveNote(title, content, tags = []) {
+  const d = await readJson(FILES.notes, { notes: [] });
+  const n = { id: Date.now(), title, content, tags, createdAt: new Date().toISOString() };
+  d.notes.push(n);
+  if (d.notes.length > 100) d.notes = d.notes.slice(-100);
+  await writeJson(FILES.notes, d); return n;
+}
+async function searchNotes(query) {
+  const d = await readJson(FILES.notes, { notes: [] });
+  return d.notes
+    .map(n => ({ ...n, score: relevance(query, `${n.title} ${n.content} ${(n.tags||[]).join(" ")}`) }))
+    .filter(n => n.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
+}
+
+// ─── Claude tool definitions ─────────────────────────────────
+const TOOLS = [
+  { name: "web_search", description: "Search the web for current information, trends, news, or any topic. Use proactively when Meet asks about current events or research.", input_schema: { type: "object", properties: { query: { type: "string", description: "Search query" } }, required: ["query"] } },
+  { name: "remember_fact", description: "Save an important fact about Meet to long-term memory. Use when Meet shares personal info, preferences, goals, decisions.", input_schema: { type: "object", properties: { key: { type: "string" }, value: { type: "string" }, category: { type: "string", enum: ["personal","business","preferences","goals","people","general"] } }, required: ["key","value"] } },
+  { name: "recall_memory", description: "Search stored memories about Meet.", input_schema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "add_task", description: "Add a task to Meet's task list.", input_schema: { type: "object", properties: { text: { type: "string" }, priority: { type: "string", enum: ["high","medium","low"] }, deadline: { type: "string", description: "YYYY-MM-DD format" } }, required: ["text"] } },
+  { name: "list_tasks", description: "Show Meet's tasks.", input_schema: { type: "object", properties: { filter: { type: "string", enum: ["open","done","all"] } } } },
+  { name: "complete_task", description: "Mark a task as done.", input_schema: { type: "object", properties: { task_id: { type: "number" } }, required: ["task_id"] } },
+  { name: "save_note", description: "Save a note, draft, SOP, idea, or any text content.", input_schema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, tags: { type: "array", items: { type: "string" } } }, required: ["title","content"] } },
+  { name: "search_notes", description: "Search saved notes.", input_schema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "get_datetime", description: "Get current date/time. Default timezone: Asia/Dubai.", input_schema: { type: "object", properties: { timezone: { type: "string" } } } },
+  { name: "calculate", description: "Evaluate a math expression.", input_schema: { type: "object", properties: { expression: { type: "string" } }, required: ["expression"] } },
+  { name: "generate_document", description: "Create a structured document (email, SOP, proposal, brief, report, checklist). Saves as a note.", input_schema: { type: "object", properties: { type: { type: "string", enum: ["email","sop","proposal","brief","framework","report","checklist"] }, title: { type: "string" }, content: { type: "string" }, tags: { type: "array", items: { type: "string" } } }, required: ["type","title","content"] } },
+  { name: "daily_briefing", description: "Generate a comprehensive daily briefing with tasks, notes, and memory context.", input_schema: { type: "object", properties: {} } },
+];
+
+// ─── Tool execution ──────────────────────────────────────────
+async function executeTool(name, input) {
+  switch (name) {
+    case "web_search": {
+      try {
+        const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(input.query||"")}&format=json&no_html=1&no_redirect=1`;
+        const r = await fetch(url); const data = await r.json();
+        const abs = data?.AbstractText || "";
+        const heading = data?.Heading || input.query;
+        const related = (data?.RelatedTopics||[]).slice(0,5).map(x=>x?.Text).filter(Boolean).join("\n- ");
+        return `**${heading}**\n${abs||"No direct summary."}\n${related?`\nRelated:\n- ${related}`:""}`;
+      } catch(e) { return `Web search failed: ${e.message}`; }
+    }
+    case "remember_fact": {
+      await saveMemoryFact(input.key, input.value, input.category || "general");
+      return `Remembered: ${input.key} = ${input.value}`;
+    }
+    case "recall_memory": {
+      const mem = await getAllMemory();
+      const results = Object.entries(mem.facts||{})
+        .map(([k,v])=>({k, v: typeof v==="object"?v.value:v, score: relevance(input.query, `${k} ${typeof v==="object"?v.value:v}`)}))
+        .filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8);
+      return results.length ? results.map(r=>`- **${r.k}**: ${r.v}`).join("\n") : "No matching memories found.";
+    }
+    case "add_task": {
+      const t = await addTask(input.text, input.priority||"medium", input.deadline||null);
+      return `Task added (ID:${t.id}): "${t.text}" [${t.priority}]${t.deadline?` due ${t.deadline}`:""}`;
+    }
+    case "list_tasks": {
+      const tasks = await listTasks(input.filter||"open");
+      return tasks.length ? tasks.map((t,i)=>`${i+1}. [${t.done?"DONE":t.priority?.toUpperCase()}] ${t.text} (ID:${t.id})${t.deadline?` due:${t.deadline}`:""}`).join("\n") : "No tasks found.";
+    }
+    case "complete_task": {
+      const t = await completeTask(input.task_id);
+      return t ? `Completed: "${t.text}"` : "Task not found.";
+    }
+    case "save_note": {
+      const n = await saveNote(input.title, input.content, input.tags||[]);
+      return `Note saved: "${n.title}" (ID:${n.id})`;
+    }
+    case "search_notes": {
+      const notes = await searchNotes(input.query);
+      return notes.length ? notes.map(n=>`**${n.title}** (${new Date(n.createdAt).toLocaleDateString()})\n${n.content.slice(0,200)}...`).join("\n\n") : "No matching notes.";
+    }
+    case "get_datetime": {
+      const tz = input.timezone || "Asia/Dubai";
+      const now = new Date();
+      return `**${now.toLocaleString("en-US",{timeZone:tz,weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:true})}** (${tz})`;
+    }
+    case "calculate": {
+      try {
+        const expr = String(input.expression || "");
+        const safe = expr.replace(/[^0-9+\-*/().%\se]/gi, "");
+        if (safe.length < expr.replace(/\s/g,"").length) return "Invalid expression. Numbers and basic math only.";
+        const result = Function(`"use strict"; return (${safe})`)();
+        return `${expr} = **${result}**`;
+      } catch(e) { return `Calculation error: ${e.message}`; }
+    }
+    case "generate_document": {
+      const n = await saveNote(`[${input.type.toUpperCase()}] ${input.title}`, input.content, [...(input.tags||[]), input.type]);
+      return `Document saved (ID:${n.id}).\n\n${input.content}`;
+    }
+    case "daily_briefing": {
+      const tasks = await listTasks("open");
+      const mem = await getAllMemory();
+      const nd = await readJson(FILES.notes,{notes:[]});
+      const recent = nd.notes.slice(-3).map(n=>`- ${n.title}`).join("\n");
+      const hi = tasks.filter(t=>t.priority==="high");
+      return [
+        `**Date:** ${new Date().toLocaleDateString("en-US",{timeZone:"Asia/Dubai",weekday:"long",year:"numeric",month:"long",day:"numeric"})}`,
+        `\n**Tasks:** ${tasks.length} open (${hi.length} high priority)`,
+        hi.length ? `**High Priority:**\n${hi.map(t=>`- ${t.text}`).join("\n")}` : "",
+        tasks.length ? `**All Open:**\n${tasks.map((t,i)=>`${i+1}. [${t.priority}] ${t.text}`).join("\n")}` : "No open tasks.",
+        recent ? `\n**Recent Notes:**\n${recent}` : "",
+        `**Memory:** ${Object.keys(mem.facts||{}).length} facts stored`,
+      ].filter(Boolean).join("\n");
+    }
+    default: return `Unknown tool: ${name}`;
+  }
+}
+
+// ─── Agent modes ─────────────────────────────────────────────
+const MODES = {
+  general: "All-purpose strategic advisor covering startups, ops, product, sales, and life.",
+  ops: "Operations commander. Systems, bottlenecks, cadence, accountability, process design.",
+  sales: "Sales strategist. Pipeline, objections, velocity, outreach, proposals.",
+  soulmap: "Soulmap product architect. Matching, growth loops, UX, retention, experimentation.",
+  writer: "Content creator. Stories, copy, social posts, articles. Match Meet's authentic voice.",
+  analyst: "Data analyst. Research, competitive intel, financial modeling, frameworks.",
+};
+
+const BASE_SYSTEM = `You are Maahi, Meet Patel's personal AI — more powerful than Jarvis.
+
+## Meet Patel:
+- Serial entrepreneur, 8+ years. Based in Dubai, UAE.
+- Founder: StartupOS, ZeroHuman, MealVerse
+- At Finanshels (operations & Pre-Sales)
+- Building Soulmap — AI dating app with soul profiling + agent-to-agent matching
+- Authored two love stories. Behavioral science student. Storyteller.
+
+## Your tools (USE THEM PROACTIVELY):
+- **web_search**: Search the web for anything
+- **remember_fact / recall_memory**: Persistent memory about Meet
+- **add_task / list_tasks / complete_task**: Task management
+- **save_note / search_notes**: Notes, drafts, SOPs, ideas
+- **get_datetime**: Current date/time (Dubai)
+- **calculate**: Math calculations
+- **generate_document**: Create emails, SOPs, proposals, briefs
+- **daily_briefing**: Morning briefing with tasks + context
+
+## Rules:
+- Use tools without asking — if needed, just do it
+- When Meet shares personal info → remember_fact
+- When he mentions a task → add_task
+- Format with **markdown**: bold, lists, headers, code blocks
+- Be concise by default, detailed on request
+- Be warm, witty, sharp, practical — never robotic
+- Never say "As an AI" — you are Maahi`;
+
+function buildSystem(mode, memCtx) {
+  const m = MODES[mode] || MODES.general;
+  const mem = memCtx ? `\n\n## Known context about Meet:\n${memCtx}` : "";
+  return `${BASE_SYSTEM}\n\n## Mode: ${mode.toUpperCase()}\n${m}${mem}`;
+}
+
+// ─── Streaming with agentic tool loop ────────────────────────
+async function streamAgentLoop({ system, messages, maxTokens, maxIter = 6, res }) {
+  let msgs = [...messages];
+  const allTools = [];
+
+  for (let i = 0; i < maxIter; i++) {
+    const body = { model: MODEL, max_tokens: maxTokens, system, messages: msgs, tools: TOOLS, stream: true };
+    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!apiRes.ok || !apiRes.body) {
+      const err = await apiRes.json().catch(()=>({}));
+      res.write(`data: ${JSON.stringify({type:"error",message:err?.error?.message||"Stream failed"})}\n\n`);
+      return { toolCalls: allTools };
+    }
+
+    const reader = apiRes.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "", blocks = [], stopReason = null, fullText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n"); buf = lines.pop() || "";
+
+      for (const line of lines) {
+        const tr = line.trim();
+        if (!tr.startsWith("data:")) continue;
+        const raw = tr.slice(5).trim();
+        if (!raw || raw === "[DONE]") continue;
+        let e; try { e = JSON.parse(raw); } catch { continue; }
+
+        if (e.type === "content_block_start") {
+          blocks[e.index] = e.content_block;
+          if (e.content_block.type === "tool_use") blocks[e.index]._json = "";
+        }
+        if (e.type === "content_block_delta") {
+          if (e.delta?.type === "text_delta" && e.delta.text) {
+            fullText += e.delta.text;
+            res.write(`data: ${JSON.stringify({type:"token",text:e.delta.text})}\n\n`);
+          }
+          if (e.delta?.type === "input_json_delta" && blocks[e.index]?.type === "tool_use") {
+            blocks[e.index]._json = (blocks[e.index]._json||"") + (e.delta.partial_json||"");
+          }
+        }
+        if (e.type === "content_block_stop") {
+          const b = blocks[e.index];
+          if (b?.type === "tool_use" && b._json) try { b.input = JSON.parse(b._json); } catch { b.input = {}; }
+        }
+        if (e.type === "message_delta") stopReason = e.delta?.stop_reason || stopReason;
+      }
+    }
+
+    if (stopReason !== "tool_use") return { toolCalls: allTools, text: fullText };
+
+    // Execute tools
+    const toolBlocks = blocks.filter(b => b?.type === "tool_use");
+    const results = [];
+    for (const b of toolBlocks) {
+      res.write(`data: ${JSON.stringify({type:"tool_call",name:b.name,input:b.input})}\n\n`);
+      const result = await executeTool(b.name, b.input || {});
+      allTools.push({ name: b.name, input: b.input, result });
+      res.write(`data: ${JSON.stringify({type:"tool_result",name:b.name,result})}\n\n`);
+      results.push({ type: "tool_result", tool_use_id: b.id, content: result });
+    }
+
+    const asstContent = blocks.filter(Boolean).map(b => {
+      if (b.type === "text") return { type: "text", text: b.text || fullText || "" };
+      if (b.type === "tool_use") return { type: "tool_use", id: b.id, name: b.name, input: b.input || {} };
+      return null;
+    }).filter(Boolean);
+
+    msgs = [...msgs, { role: "assistant", content: asstContent }, { role: "user", content: results }];
+  }
+  return { toolCalls: allTools };
+}
+
+// ─── Non-streaming agent loop ────────────────────────────────
+async function agentLoop({ system, messages, maxTokens, maxIter = 6 }) {
+  let msgs = [...messages];
+  const allTools = [];
+
+  for (let i = 0; i < maxIter; i++) {
+    const body = { model: MODEL, max_tokens: maxTokens, system, messages: msgs, tools: TOOLS };
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (data?.error) return { text: `Error: ${data.error.message}`, toolCalls: allTools };
+
+    const content = data?.content || [];
+    const textParts = content.filter(b => b.type === "text").map(b => b.text);
+    const toolBlocks = content.filter(b => b.type === "tool_use");
+
+    if (data?.stop_reason !== "tool_use" || !toolBlocks.length) {
+      return { text: textParts.join("\n"), toolCalls: allTools, usage: data?.usage };
+    }
+
+    const results = [];
+    for (const b of toolBlocks) {
+      const result = await executeTool(b.name, b.input);
+      allTools.push({ name: b.name, input: b.input, result });
+      results.push({ type: "tool_result", tool_use_id: b.id, content: result });
+    }
+    msgs = [...msgs, { role: "assistant", content }, { role: "user", content: results }];
+  }
+  return { text: "Hit max tool iterations.", toolCalls: allTools };
+}
+
+// ─── Routes ──────────────────────────────────────────────────
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ["http://localhost:8787", "http://127.0.0.1:8787"];
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+app.use(express.json({ limit: "2mb" }));
+await ensureData();
+
+// Serve built frontend
+const DIST = path.join(__dirname, "..", "dist");
+app.use(express.static(DIST));
+
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true, service: "maahi-superapp", model: MODEL, tools: TOOLS.length, modes: Object.keys(MODES) });
+});
+
+app.get("/api/memory", async (_req, res) => res.json(await getAllMemory()));
+app.delete("/api/memory", async (_req, res) => { await clearMemory(); res.json({ ok: true }); });
+
+app.get("/api/tasks", async (req, res) => res.json({ tasks: await listTasks(req.query.filter || "open") }));
+
+app.get("/api/conversations", async (_req, res) => res.json({ conversations: await listConversations() }));
+app.get("/api/conversations/:id", async (req, res) => {
+  const c = await getConversation(req.params.id);
+  c ? res.json(c) : res.status(404).json({ error: "Not found" });
+});
+app.post("/api/conversations", async (req, res) => {
+  const { id, title, messages } = req.body;
+  await saveConversation(id, title, messages);
+  res.json({ ok: true });
+});
+app.delete("/api/conversations/:id", async (req, res) => {
+  await deleteConversation(req.params.id);
+  res.json({ ok: true });
+});
+
+app.get("/api/notes", async (req, res) => {
+  if (req.query.q) return res.json({ notes: await searchNotes(req.query.q) });
+  const d = await readJson(FILES.notes, { notes: [] });
+  res.json({ notes: d.notes.slice(-20) });
+});
+
+app.post("/api/chat", async (req, res) => {
+  if (!ANTHROPIC_KEY) return res.status(500).json({ error: "Missing ANTHROPIC_API_KEY" });
+  try {
+    const { messages, mode = "general", max_tokens = 2048 } = req.body || {};
+    if (!Array.isArray(messages) || !messages.length) return res.status(400).json({ error: "messages required" });
+    const filtered = messages.filter(m => m?.role === "user" || m?.role === "assistant").map(m => ({ role: m.role, content: String(m.content || "") }));
+    const last = [...filtered].reverse().find(m => m.role === "user")?.content || "";
+    const system = buildSystem(mode, await getMemoryContext(last));
+    const result = await agentLoop({ system, messages: filtered, maxTokens: Number(max_tokens) || 2048 });
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post("/api/chat/stream", async (req, res) => {
+  if (!ANTHROPIC_KEY) return res.status(500).json({ error: "Missing ANTHROPIC_API_KEY" });
+  try {
+    const { messages, mode = "general", max_tokens = 2048 } = req.body || {};
+    if (!Array.isArray(messages) || !messages.length) return res.status(400).json({ error: "messages required" });
+    const filtered = messages.filter(m => m?.role === "user" || m?.role === "assistant").map(m => ({ role: m.role, content: String(m.content || "") }));
+    const last = [...filtered].reverse().find(m => m.role === "user")?.content || "";
+    const system = buildSystem(mode, await getMemoryContext(last));
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.write(`data: ${JSON.stringify({type:"start",mode})}\n\n`);
+
+    const { toolCalls, text } = await streamAgentLoop({ system, messages: filtered, maxTokens: Number(max_tokens) || 2048, res });
+    res.write(`data: ${JSON.stringify({type:"done",text:text||"",toolCalls})}\n\n`);
+    res.end();
+  } catch (e) {
+    if (!res.headersSent) return res.status(500).json({ error: e.message });
+    res.write(`data: ${JSON.stringify({type:"error",message:e.message})}\n\n`);
+    res.end();
+  }
+});
+
+// Catch-all: serve React app for any non-API route
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(DIST, "index.html"));
+});
+
+app.listen(port, () => console.log(`Maahi SuperApp on http://localhost:${port} | ${MODEL} | ${TOOLS.length} tools | ${Object.keys(MODES).length} modes`));

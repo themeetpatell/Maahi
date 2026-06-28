@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Maahi — Command Center</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="data:," />
+<style>
+  :root {
+    --bg-0: #06080f;
+    --bg-1: #0c111f;
+    --bg-2: #121a2e;
+    --border: rgba(120, 220, 255, 0.18);
+    --border-strong: rgba(120, 220, 255, 0.35);
+    --accent: #6df0ff;
+    --user: #ffd66e;
+    --maahi: #b6f0ff;
+    --tool: #c8ffb1;
+    --error: #ff7a7a;
+    --warn: #ffaa55;
+    --ok: #8be38b;
+    --text: #e8f4ff;
+    --text-dim: #aac6d8;
+    --text-dimmer: #7e94a4;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    --mono: "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background: var(--bg-0); color: var(--text);
+    font-family: var(--font); overflow: hidden;
+    font-size: 13px; line-height: 1.45;
+  }
+  body {
+    background:
+      radial-gradient(circle at 15% 0%, rgba(80,180,255,0.10), transparent 50%),
+      radial-gradient(circle at 95% 100%, rgba(140,90,255,0.10), transparent 55%),
+      var(--bg-0);
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    grid-template-rows: 44px 1fr 96px;
+    grid-template-areas:
+      "topbar topbar topbar"
+      "nav    main   rail"
+      "bottom bottom bottom";
+  }
+
+  .topbar {
+    grid-area: topbar;
+    display: flex; align-items: center;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(6, 8, 15, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-app-region: drag;
+  }
+  .topbar .brand {
+    font-weight: 700; letter-spacing: 0.18em;
+    color: var(--accent); font-size: 13px;
+  }
+  .topbar .state {
+    margin-left: 14px;
+    font-size: 11px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .topbar .state .led {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--text-dimmer);
+    margin-right: 6px; vertical-align: middle;
+  }
+  .state.idle      .led { background: var(--text-dimmer); }
+  .state.listening .led { background: var(--user); box-shadow: 0 0 8px var(--user); }
+  .state.thinking  .led { background: #c89bff; box-shadow: 0 0 8px #c89bff; }
+  .state.speaking  .led { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .state.acting    .led { background: var(--tool); box-shadow: 0 0 8px var(--tool); }
+  .state.paused    .led { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+  .state.error     .led { background: var(--error); box-shadow: 0 0 8px var(--error); }
+  .topbar .clock {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px; color: var(--text-dim);
+  }
+
+  .nav {
+    grid-area: nav;
+    border-right: 1px solid var(--border);
+    padding: 18px 10px;
+    background: rgba(12, 17, 31, 0.4);
+    overflow-y: auto;
+  }
+  .nav-item {
+    display: flex; align-items: center;
+    gap: 10px; padding: 9px 12px;
+    border-radius: 8px; cursor: pointer;
+    color: var(--text-dim); font-size: 12.5px;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-item.active {
+    background: rgba(109,240,255,0.10);
+    color: var(--accent);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  .nav-item .icon { width: 16px; text-align: center; font-size: 13px; }
+  .nav-section {
+    font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--text-dimmer);
+    padding: 8px 12px 4px;
+  }
+
+  .main {
+    grid-area: main;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+  .main h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .main .sub { margin: 0 0 24px; color: var(--text-dim); font-size: 12.5px; }
+  .main h2 {
+    margin: 24px 0 10px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--accent); opacity: 0.85;
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .row {
+    display: flex; align-items: center;
+    gap: 14px; margin: 8px 0; padding: 4px 0;
+  }
+  .row label { flex: 0 0 150px; color: var(--text-dim); font-size: 12px; }
+  .row input[type=text], .row input[type=email], .row input[type=number],
+  .row select, .row textarea {
+    flex: 1 1 auto; min-width: 0;
+    background: rgba(0,0,0,0.32);
+    border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text);
+    font: inherit; font-size: 12.5px;
+    padding: 7px 10px;
+    transition: border-color 0.15s;
+  }
+  .row input:focus, .row select:focus, .row textarea:focus {
+    border-color: var(--accent); outline: none;
+  }
+  .row textarea { min-height: 80px; resize: vertical; }
+  .row input[type=range] { flex: 1 1 auto; }
+  .row input[type=checkbox] { flex: 0 0 auto; transform: scale(1.3); accent-color: var(--accent); }
+  .row .help { flex: 1 1 auto; font-size: 11px; color: var(--text-dimmer); }
+  .row .val {
+    flex: 0 0 56px; text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim); font-size: 11.5px;
+  }
+  .btn {
+    font: inherit; font-size: 12px;
+    background: var(--accent); color: var(--bg-0);
+    border: 0; border-radius: 7px;
+    padding: 7px 16px; cursor: pointer; font-weight: 600;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .btn.danger { background: var(--error); color: #1a0606; }
+  .btn.warn { background: transparent; color: var(--warn); border: 1px solid var(--warn); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .actions { margin-top: 18px; display: flex; gap: 10px; }
+  .status {
+    margin-top: 16px; padding: 10px 12px;
+    font-size: 12px; border-radius: 8px;
+    display: none;
+  }
+  .status.show { display: block; background: rgba(139,227,139,0.10); color: var(--ok); }
+  .status.error.show { background: rgba(255,122,122,0.10); color: var(--error); }
+
+  #liveTranscript {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    min-height: 320px;
+    max-height: calc(100vh - 360px);
+    overflow-y: auto; font-size: 13px;
+  }
+  #liveTranscript::-webkit-scrollbar { width: 6px; }
+  #liveTranscript::-webkit-scrollbar-thumb { background: rgba(120,220,255,0.18); border-radius: 3px; }
+  .placeholder {
+    color: var(--text-dimmer); font-size: 13px;
+    padding: 28px 0; text-align: center;
+  }
+  .placeholder b { color: var(--accent); font-weight: 600; }
+  .line { margin-bottom: 5px; }
+  .line .who {
+    display: inline-block; width: 60px;
+    color: var(--text-dimmer); font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    vertical-align: top;
+  }
+  .line.user  .text { color: var(--user); }
+  .line.maahi .text { color: var(--maahi); }
+  .line.tool  .text { color: var(--tool); font-style: italic; opacity: 0.92; }
+  .line.heard .text { color: var(--text-dimmer); font-style: italic; }
+  .line .text { display: inline-block; max-width: calc(100% - 70px); word-wrap: break-word; }
+
+  .err-card {
+    margin: 8px 0; padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255,122,122,0.08);
+    border: 1px solid rgba(255,122,122,0.32);
+  }
+  .err-card .where {
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--error); font-weight: 600;
+  }
+  .err-card .msg { margin-top: 4px; font-size: 12.5px; color: #ffd2d2; }
+  .err-card .fix { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .err-card .fix .btn { padding: 4px 10px; font-size: 11px; }
+
+  .memory-doc {
+    background: rgba(0,0,0,0.32);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: var(--mono); font-size: 12px;
+    white-space: pre-wrap;
+    color: #d8e8f0; max-height: 320px; overflow-y: auto;
+  }
+  .memory-empty { color: var(--text-dimmer); font-style: italic; }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; margin: 8px 0 20px;
+  }
+  .stat-card {
+    background: rgba(0,0,0,0.28);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .stat-card .lbl {
+    font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--text-dimmer);
+  }
+  .stat-card .val {
+    margin-top: 4px; font-size: 19px; font-weight: 600;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  .stat-card .sub-val { margin-top: 2px; font-size: 11px; color: var(--text-dim); }
+
+  .skill-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+  .skill-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+  }
+  .skill-card .name { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .skill-card .desc { margin-top: 4px; font-size: 11.5px; color: var(--text-dim); }
+  .skill-card .args { margin-top: 6px; font-size: 10.5px; color: var(--text-dimmer); font-family: var(--mono); }
+
+  .perm-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .perm-row:first-of-type { border-top: 0; }
+  .perm-row .stat { width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto; }
+  .perm-row .stat.granted { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+  .perm-row .stat.denied  { background: var(--error); }
+  .perm-row .stat.unknown { background: var(--text-dimmer); }
+  .perm-row .pinfo { flex: 1 1 auto; }
+  .perm-row .pinfo .ptitle { font-size: 13px; font-weight: 500; }
+  .perm-row .pinfo .psub { font-size: 11px; color: var(--text-dimmer); margin-top: 2px; }
+
+  #logs {
+    background: rgba(0,0,0,0.42);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--mono); font-size: 11px;
+    color: #b8d0d8; max-height: 60vh;
+    overflow-y: auto; white-space: pre-wrap;
+  }
+
+  .rail {
+    grid-area: rail;
+    border-left: 1px solid var(--border);
+    background: rgba(12, 17, 31, 0.4);
+    padding: 20px 18px;
+    overflow-y: auto;
+  }
+  .rail h3 {
+    margin: 18px 0 8px;
+    font-size: 9.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--text-dimmer);
+    font-weight: 600;
+  }
+  .rail h3:first-of-type { margin-top: 0; }
+  .rail-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .rail-card .k { font-size: 10.5px; color: var(--text-dimmer); }
+  .rail-card .v {
+    font-size: 13px; color: var(--text);
+    margin-top: 2px; font-variant-numeric: tabular-nums;
+  }
+  .rail-card .v.accent { color: var(--accent); }
+  .event-item {
+    padding: 6px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    font-size: 11.5px;
+  }
+  .event-item:first-of-type { border-top: 0; }
+  .event-item .when {
+    color: var(--text-dimmer);
+    font-size: 10.5px; font-variant-numeric: tabular-nums;
+    margin-right: 8px;
+  }
+  .rail .empty { color: var(--text-dimmer); font-size: 11.5px; font-style: italic; }
+
+  .bottom {
+    grid-area: bottom;
+    border-top: 1px solid var(--border);
+    background: rgba(6, 8, 15, 0.6);
+    padding: 12px 18px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .try-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .try-row .lbl {
+    font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--text-dimmer);
+    margin-right: 6px;
+  }
+  .chip {
+    font-size: 11px; padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(109,240,255,0.06);
+    border: 1px solid rgba(109,240,255,0.22);
+    color: #c8e8f0; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .chip:hover { background: rgba(109,240,255,0.16); color: #fff; }
+  .cmd-row { display: flex; gap: 10px; align-items: stretch; }
+  .cmd-row input {
+    flex: 1 1 auto; min-width: 0;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--border-strong);
+    border-radius: 9px; color: var(--text);
+    font: inherit; font-size: 13.5px;
+    padding: 10px 14px;
+  }
+  .cmd-row input:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(109,240,255,0.12);
+  }
+  .cmd-row .send {
+    background: var(--accent); color: var(--bg-0);
+    border: 0; border-radius: 9px;
+    padding: 0 18px; font: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+  .cmd-row .send:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span class="brand">MAAHI</span>
+    <span id="stateBadge" class="state idle"><span class="led"></span><span id="stateLabel">idle</span></span>
+    <span class="clock" id="clock">—</span>
+  </div>
+
+  <div class="nav">
+    <div class="nav-section">Workspace</div>
+    <div class="nav-item active" data-view="live"><span class="icon">●</span><span>Live</span></div>
+    <div class="nav-item" data-view="today"><span class="icon">◷</span><span>Today</span></div>
+
+    <div class="nav-section">Configure</div>
+    <div class="nav-item" data-view="profile"><span class="icon">👤</span><span>Profile</span></div>
+    <div class="nav-item" data-view="voice"><span class="icon">🎙</span><span>Voice</span></div>
+    <div class="nav-item" data-view="brain"><span class="icon">🧠</span><span>Brain</span></div>
+    <div class="nav-item" data-view="wake"><span class="icon">⚡</span><span>Wake</span></div>
+
+    <div class="nav-section">Knowledge</div>
+    <div class="nav-item" data-view="memory"><span class="icon">📚</span><span>Memory</span></div>
+    <div class="nav-item" data-view="skills"><span class="icon">🔌</span><span>Skills</span></div>
+
+    <div class="nav-section">System</div>
+    <div class="nav-item" data-view="permissions"><span class="icon">🔒</span><span>Permissions</span></div>
+    <div class="nav-item" data-view="logs"><span class="icon">📜</span><span>Logs</span></div>
+    <div class="nav-item" data-view="about"><span class="icon">ℹ</span><span>About</span></div>
+  </div>
+
+  <div class="main">
+
+    <div id="view-live" class="view active">
+      <h1>Live</h1>
+      <p class="sub">What Maahi is doing right now. Errors here are clickable.</p>
+      <div id="liveTranscript">
+        <div class="placeholder">
+          Say <b>"Hey Maahi"</b> or type a command below.
+        </div>
+      </div>
+    </div>
+
+    <div id="view-today" class="view">
+      <h1>Today</h1>
+      <p class="sub">Every turn from today. Pause the mic, or wipe the transcript.</p>
+      <div class="actions" style="margin-top:0;margin-bottom:18px;">
+        <button class="btn warn" id="pauseBtn">Pause listening</button>
+        <button class="btn danger" id="clearBtn">Delete today's transcript</button>
+        <button class="btn ghost" id="refreshTodayBtn">Refresh</button>
+      </div>
+      <div id="todayTurns" class="memory-doc" style="font-family:var(--font);">Loading…</div>
+    </div>
+
+    <div id="view-profile" class="view">
+      <h1>Profile</h1>
+      <p class="sub">Who Maahi thinks she's helping. Goes into her system prompt.</p>
+      <div class="row"><label>Your name</label><input type="text" id="cfg_owner_name"/></div>
+      <div class="row"><label>Email</label><input type="email" id="cfg_owner_email"/></div>
+      <div class="row" style="align-items:flex-start;">
+        <label style="margin-top:7px;">Bio</label>
+        <textarea id="cfg_owner_bio" placeholder="One paragraph about you. Update when your role / companies change."></textarea>
+      </div>
+      <div class="actions"><button class="btn" data-save="profile">Save</button></div>
+      <div class="status" id="status-profile"></div>
+    </div>
+
+    <div id="view-voice" class="view">
+      <h1>Voice</h1>
+      <p class="sub">How Maahi sounds. Install a Premium Siri voice for the best quality.</p>
+      <div class="row">
+        <label>Voice</label>
+        <select id="cfg_tts_voice"></select>
+        <button class="btn ghost" id="auditionBtn">Test</button>
+      </div>
+      <div class="row">
+        <label>Rate (wpm)</label>
+        <input type="range" id="cfg_tts_rate" min="120" max="280" step="5"/>
+        <span class="val" id="rateVal">200</span>
+      </div>
+      <div class="row">
+        <label>Stream</label>
+        <input type="checkbox" id="cfg_tts_stream"/>
+        <span class="help">Speak as soon as the first sentence arrives.</span>
+      </div>
+      <div class="actions"><button class="btn" data-save="voice">Save</button></div>
+      <div class="status" id="status-voice"></div>
+    </div>
+
+    <div id="view-brain" class="view">
+      <h1>Brain</h1>
+      <p class="sub">Which local model powers Maahi's reasoning.</p>
+      <div class="row">
+        <label>Model</label>
+        <select id="cfg_brain_model"></select>
+        <button class="btn ghost" id="probeBtn">Probe</button>
+      </div>
+      <div class="row"><label>Result</label><div class="help" id="probeResult">—</div></div>
+      <div class="actions"><button class="btn" data-save="brain">Save</button></div>
+      <div class="status" id="status-brain"></div>
+    </div>
+
+    <div id="view-wake" class="view">
+      <h1>Wake word</h1>
+      <p class="sub">What Maahi listens for, and how patient she is.</p>
+      <div class="row"><label>Phrases</label><input type="text" id="cfg_wake_phrases" placeholder="hey maahi, maahi"/></div>
+      <div class="row" style="margin-top:-4px;"><label></label><div class="help">Comma-separated. Lowercase. Add aliases if she mishears your accent.</div></div>
+      <div class="row"><label>Silence cutoff (s)</label><input type="number" id="cfg_wake_silence" min="0.3" max="2.5" step="0.1"/><span class="help">0.6 = snappy. 1.2 = patient.</span></div>
+      <div class="actions"><button class="btn" data-save="wake">Save</button></div>
+      <div class="status" id="status-wake"></div>
+    </div>
+
+    <div id="view-memory" class="view">
+      <h1>Memory</h1>
+      <p class="sub">Everything Maahi has learned about you across sessions.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="lbl">Notes indexed</div><div class="val" id="idx-notes">—</div><div class="sub-val" id="idx-model">—</div></div>
+        <div class="stat-card"><div class="lbl">Index size</div><div class="val" id="idx-size">—</div><div class="sub-val">on disk</div></div>
+        <div class="stat-card"><div class="lbl">Last update</div><div class="val" id="idx-update">—</div><div class="sub-val" id="idx-ago">—</div></div>
+      </div>
+      <h2>Facts</h2>
+      <div class="memory-doc" id="factsContent">Loading…</div>
+      <h2>Preferences</h2>
+      <div class="memory-doc" id="prefsContent">Loading…</div>
+    </div>
+
+    <div id="view-skills" class="view">
+      <h1>Skills</h1>
+      <p class="sub">Every tool Maahi can use. Drop more into <code>~/.maahi/skills/*.py</code>.</p>
+      <div id="skillGrid" class="skill-grid"></div>
+    </div>
+
+    <div id="view-permissions" class="view">
+      <h1>Permissions</h1>
+      <p class="sub">macOS controls Maahi needs to operate. Click "Grant" to open the right Settings pane.</p>
+      <div id="permRows"></div>
+      <div class="actions"><button class="btn ghost" id="recheckBtn">Re-check all</button></div>
+    </div>
+
+    <div id="view-logs" class="view">
+      <h1>Logs</h1>
+      <p class="sub">Tail of <code>maahi.log</code> — useful when something doesn't work.</p>
+      <div class="actions" style="margin-top:0;margin-bottom:14px;"><button class="btn ghost" id="refreshLogsBtn">Refresh</button></div>
+      <div id="logs">Loading…</div>
+    </div>
+
+    <div id="view-about" class="view">
+      <h1>About Maahi</h1>
+      <p class="sub">Local. Private. Yours.</p>
+      <h2>Strict-local promise</h2>
+      <p style="color:var(--text-dim);max-width:540px;">
+        Nothing leaves your Mac. The brain (Ollama), embeddings (nomic-embed-text),
+        STT (Whisper), and TTS (Piper or macOS <code>say</code>) all run locally.
+        Your conversations live in your own Obsidian vault.
+      </p>
+      <h2>Where files live</h2>
+      <div class="memory-doc">&lt;project&gt;/maahi/                    project root
+├── config.yaml                       (Settings panel writes this)
+├── config.yaml.bak                   (last good copy)
+├── maahi/                            source
+├── logs/maahi.log                    runtime log
+└── voices/                           Piper voice files
+
+~/.maahi/skills/                      your skill packs
+
+&lt;vault&gt;/maahi/memory/
+├── facts.md                          durable facts about you
+├── preferences.md                    stable settings
+├── conversations/*.jsonl             raw transcripts
+├── consolidated.json                 ledger of processed dates
+└── vector_index/                     semantic search index</div>
+      <h2>Built for Meet. Named for Maahi.</h2>
+    </div>
+
+  </div>
+
+  <div class="rail">
+    <h3>State</h3>
+    <div class="rail-card"><div class="k">Current</div><div class="v accent" id="rail-state">idle</div></div>
+
+    <h3>Brain</h3>
+    <div class="rail-card"><div class="k">Model</div><div class="v" id="rail-model">—</div></div>
+    <div class="rail-card"><div class="k">Last probe</div><div class="v" id="rail-probe">—</div></div>
+
+    <h3>Memory</h3>
+    <div class="rail-card"><div class="k">Notes indexed</div><div class="v" id="rail-notes">—</div></div>
+
+    <h3>Calendar</h3>
+    <div id="rail-calendar"><div class="empty">Loading…</div></div>
+
+    <h3>Reminders</h3>
+    <div id="rail-reminders"><div class="empty">Loading…</div></div>
+
+    <h3>Recent activity</h3>
+    <div id="rail-activity"><div class="empty">Nothing yet.</div></div>
+  </div>
+
+  <div class="bottom">
+    <div class="try-row" id="suggestions"><span class="lbl">Try</span></div>
+    <div class="cmd-row">
+      <input type="text" id="cmdInput" placeholder="Type a command, then press Enter (⌘K to focus)…" autofocus />
+      <button class="send" id="cmdSend">Send →</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const stateBadge = document.getElementById("stateBadge");
+  const stateLabel = document.getElementById("stateLabel");
+  const railState  = document.getElementById("rail-state");
+  const clock      = document.getElementById("clock");
+  let lastSeq = 0;
+  let ws = null;
+
+  function setClock() {
+    const d = new Date();
+    clock.textContent = d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+  }
+  setClock(); setInterval(setClock, 30 * 1000);
+
+  function setState(name) {
+    stateBadge.className = "state " + name;
+    stateLabel.textContent = name;
+    railState.textContent = name;
+    railState.className = "v " + (name === "idle" ? "" : "accent");
+  }
+
+  const navItems = document.querySelectorAll(".nav-item");
+  const views = document.querySelectorAll(".view");
+  navItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      const v = item.dataset.view;
+      navItems.forEach((n) => n.classList.toggle("active", n === item));
+      views.forEach((view) => view.classList.toggle("active", view.id === "view-" + v));
+      onViewShown(v);
+    });
+  });
+  function onViewShown(v) {
+    if (v === "voice" || v === "brain" || v === "wake" || v === "profile") loadSettings();
+    if (v === "memory")      loadMemory();
+    if (v === "skills")      loadSkills();
+    if (v === "permissions") loadPermissions();
+    if (v === "logs")        loadLogs();
+    if (v === "today")       loadToday();
+  }
+  function applyHashRoute() {
+    const h = (location.hash || "").replace(/^#/, "");
+    if (!h) return;
+    const tab = [...navItems].find((n) => n.dataset.view === h);
+    if (tab) tab.click();
+  }
+  window.addEventListener("hashchange", applyHashRoute);
+  setTimeout(applyHashRoute, 50);
+
+  const liveT = document.getElementById("liveTranscript");
+  const railActivity = document.getElementById("rail-activity");
+  const MAX = 100;
+  let placeholderRemoved = false;
+  function clearPlaceholder() {
+    if (placeholderRemoved) return;
+    const ph = liveT.querySelector(".placeholder");
+    if (ph) ph.remove();
+    placeholderRemoved = true;
+  }
+  function appendLine(kind, who, text) {
+    clearPlaceholder();
+    const div = document.createElement("div");
+    div.className = "line " + kind;
+    div.innerHTML = '<span class="who"></span><span class="text"></span>';
+    div.firstElementChild.textContent = who;
+    div.lastElementChild.textContent  = text;
+    liveT.appendChild(div);
+    while (liveT.children.length > MAX) liveT.removeChild(liveT.firstChild);
+    liveT.scrollTop = liveT.scrollHeight;
+  }
+  function appendErrorCard(where, message) {
+    clearPlaceholder();
+    const card = document.createElement("div");
+    card.className = "err-card";
+    const wDiv = document.createElement("div");
+    wDiv.className = "where"; wDiv.textContent = where;
+    const mDiv = document.createElement("div");
+    mDiv.className = "msg"; mDiv.textContent = message;
+    const fix = document.createElement("div");
+    fix.className = "fix";
+    pickFixPanes(where, message).forEach((p) => {
+      const b = document.createElement("button");
+      b.className = "btn"; b.textContent = p.label;
+      b.onclick = () => openPermissionPane(p.pane);
+      fix.appendChild(b);
+    });
+    const dismiss = document.createElement("button");
+    dismiss.className = "btn ghost"; dismiss.textContent = "Dismiss";
+    dismiss.onclick = () => card.remove();
+    fix.appendChild(dismiss);
+    card.append(wDiv, mDiv, fix);
+    liveT.appendChild(card);
+    liveT.scrollTop = liveT.scrollHeight;
+  }
+  function pickFixPanes(where, message) {
+    const txt = (where + " " + (message || "")).toLowerCase();
+    const out = [];
+    if (txt.includes("mic") || txt.includes("audio") || txt.includes("portaudio"))
+      out.push({label: "Grant Microphone", pane: "mic"});
+    if (txt.includes("accessib") || txt.includes("system events"))
+      out.push({label: "Grant Accessibility", pane: "accessibility"});
+    if (txt.includes("calendar") || txt.includes("mail") || txt.includes("messages")
+        || txt.includes("reminders") || txt.includes("automation") || txt.includes("1743"))
+      out.push({label: "Grant Automation", pane: "automation"});
+    if (txt.includes("screen") || txt.includes("screencapture"))
+      out.push({label: "Grant Screen", pane: "screen"});
+    return out;
+  }
+  function logActivity(line) {
+    const empty = railActivity.querySelector(".empty");
+    if (empty) empty.remove();
+    const div = document.createElement("div");
+    div.className = "event-item";
+    const t = new Date();
+    div.innerHTML = '<span class="when">' + t.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + '</span><span></span>';
+    div.lastElementChild.textContent = line;
+    railActivity.prepend(div);
+    while (railActivity.children.length > 12) railActivity.removeChild(railActivity.lastChild);
+  }
+
+  function handleEvent(ev) {
+    if (typeof ev.seq === "number") {
+      if (ev.seq <= lastSeq && !ev.replay) return;
+      lastSeq = ev.seq;
+    }
+    const p = ev.payload || {};
+    switch (ev.type) {
+      case "state": setState(p.state || "idle"); break;
+      case "heard": appendLine("heard", "stt", 'heard: "' + p.text + '"'); break;
+      case "transcript":
+        if (p.speaker === "user")  { appendLine("user",  "you",   p.text); logActivity("you: " + p.text); }
+        if (p.speaker === "maahi") { appendLine("maahi", "maahi", p.text); logActivity("maahi: " + p.text); }
+        break;
+      case "tool_start": appendLine("tool", "tool", "→ " + p.name); logActivity("tool: " + p.name); break;
+      case "error": appendErrorCard(p.where || "error", p.message || "Unknown"); break;
+      case "listening_set":
+        const paused = !!p.paused;
+        if (pauseBtn) pauseBtn.textContent = paused ? "Resume listening" : "Pause listening";
+        break;
+    }
+  }
+  function connectWS() {
+    const url = "ws://" + location.host + "/ws";
+    ws = new WebSocket(url);
+    ws.onmessage = (m) => { try { handleEvent(JSON.parse(m.data)); } catch (e) {} };
+    ws.onclose = () => setTimeout(connectWS, 800);
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  }
+  connectWS();
+
+  let _settingsLoaded = false;
+  let _voicesLoaded = false;
+  let _modelsLoaded = false;
+  const rateInput = document.getElementById("cfg_tts_rate");
+  const rateVal   = document.getElementById("rateVal");
+  rateInput.addEventListener("input", () => rateVal.textContent = rateInput.value);
+
+  async function loadSettings() {
+    if (_settingsLoaded) return;
+    try {
+      const r = await fetch("/api/config"); const d = await r.json();
+      const c = d.config;
+      document.getElementById("cfg_owner_name").value  = c.owner?.name  ?? "";
+      document.getElementById("cfg_owner_email").value = c.owner?.email ?? "";
+      document.getElementById("cfg_owner_bio").value   = c.owner?.bio   ?? "";
+
+      if (!_voicesLoaded) await loadVoices(c.tts?.voice);
+      document.getElementById("cfg_tts_voice").value = c.tts?.voice ?? "";
+      rateInput.value = c.tts?.rate ?? 200;
+      rateVal.textContent = rateInput.value;
+      document.getElementById("cfg_tts_stream").checked = !!c.tts?.stream;
+
+      if (!_modelsLoaded) await loadModels(c.brain?.model);
+      document.getElementById("cfg_brain_model").value = c.brain?.model ?? "";
+
+      document.getElementById("cfg_wake_phrases").value = (c.wake?.phrases ?? []).join(", ");
+      document.getElementById("cfg_wake_silence").value = c.wake?.silence_seconds ?? 0.6;
+      document.getElementById("rail-model").textContent = c.brain?.model ?? "—";
+      _settingsLoaded = true;
+    } catch (e) { console.error("loadSettings failed", e); }
+  }
+  async function loadVoices(current) {
+    const sel = document.getElementById("cfg_tts_voice");
+    sel.innerHTML = "";
+    try {
+      const r = await fetch("/api/voices"); const d = await r.json();
+      (d.voices || []).forEach((v) => {
+        const o = document.createElement("option");
+        o.value = v.name; o.textContent = v.name + " (" + v.locale + ")";
+        sel.appendChild(o);
+      });
+      _voicesLoaded = true;
+    } catch (e) {
+      if (current) {
+        const o = document.createElement("option"); o.value = current; o.textContent = current;
+        sel.appendChild(o);
+      }
+    }
+  }
+  async function loadModels(current) {
+    const sel = document.getElementById("cfg_brain_model");
+    sel.innerHTML = "";
+    const candidates = new Set(["qwen2.5:7b", "qwen2.5:14b", "llama3.2:3b", "llama3.3:70b"]);
+    if (current) candidates.add(current);
+    try {
+      const r = await fetch("/api/brain/probe"); const d = await r.json();
+      (d.models_installed || []).forEach((m) => candidates.add(m));
+    } catch (e) {}
+    [...candidates].forEach((m) => {
+      const o = document.createElement("option"); o.value = m; o.textContent = m;
+      sel.appendChild(o);
+    });
+    _modelsLoaded = true;
+  }
+  function buildPatch(section) {
+    const phrases = document.getElementById("cfg_wake_phrases").value
+      .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    if (section === "profile") return {owner: {
+      name:  document.getElementById("cfg_owner_name").value,
+      email: document.getElementById("cfg_owner_email").value,
+      bio:   document.getElementById("cfg_owner_bio").value,
+    }};
+    if (section === "voice") return {tts: {
+      voice:  document.getElementById("cfg_tts_voice").value,
+      rate:   Number(rateInput.value),
+      stream: document.getElementById("cfg_tts_stream").checked,
+    }};
+    if (section === "brain") return {brain: {model: document.getElementById("cfg_brain_model").value}};
+    if (section === "wake") return {wake: {
+      phrases, silence_seconds: Number(document.getElementById("cfg_wake_silence").value),
+    }};
+    return {};
+  }
+  document.querySelectorAll("[data-save]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const section = btn.dataset.save;
+      const status = document.getElementById("status-" + section);
+      try {
+        const r = await fetch("/api/config", {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({patch: buildPatch(section)}),
+        });
+        const d = await r.json();
+        if (r.ok && d.ok) {
+          status.textContent = "Saved " + d.written + " field(s). Some changes need a restart.";
+          status.classList.remove("error"); status.classList.add("show");
+        } else {
+          status.textContent = "Save failed: " + (d.detail || d.error);
+          status.classList.add("error", "show");
+        }
+        setTimeout(() => status.classList.remove("show"), 6000);
+      } catch (e) {
+        status.textContent = "Save failed: " + e;
+        status.classList.add("error", "show");
+      }
+    });
+  });
+  document.getElementById("auditionBtn").addEventListener("click", async () => {
+    const voice = document.getElementById("cfg_tts_voice").value;
+    if (voice) await fetch("/api/audition", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({voice}),
+    });
+  });
+  const probeBtn = document.getElementById("probeBtn");
+  probeBtn.addEventListener("click", async () => {
+    probeBtn.disabled = true;
+    document.getElementById("probeResult").textContent = "Pinging…";
+    try {
+      const r = await fetch("/api/brain/probe"); const d = await r.json();
+      document.getElementById("probeResult").textContent = d.ok
+        ? "OK — " + d.model + " responded in " + d.elapsed_ms + "ms"
+        : "Failed: " + d.error;
+      document.getElementById("rail-probe").textContent = d.ok ? d.elapsed_ms + "ms" : "down";
+    } catch (e) {
+      document.getElementById("probeResult").textContent = "Could not reach probe.";
+    } finally { probeBtn.disabled = false; }
+  });
+
+  async function loadMemory() {
+    const factsEl = document.getElementById("factsContent");
+    const prefsEl = document.getElementById("prefsContent");
+    try {
+      const [f, p, idx] = await Promise.all([
+        fetch("/api/memory/facts").then((r) => r.json()),
+        fetch("/api/memory/preferences").then((r) => r.json()),
+        fetch("/api/memory/index_stats").then((r) => r.json()),
+      ]);
+      factsEl.textContent = f.content && f.content.trim()
+        ? f.content : "(empty — facts will appear after the nightly consolidator runs)";
+      factsEl.classList.toggle("memory-empty", !(f.content && f.content.trim()));
+      prefsEl.textContent = p.content && p.content.trim() ? p.content : "(empty)";
+      prefsEl.classList.toggle("memory-empty", !(p.content && p.content.trim()));
+
+      document.getElementById("idx-notes").textContent = idx.notes ?? 0;
+      document.getElementById("idx-model").textContent = idx.model || "—";
+      document.getElementById("idx-size").textContent  = idx.vectors_bytes ? formatBytes(idx.vectors_bytes) : "0 B";
+      const ts = idx.last_update_ts;
+      document.getElementById("idx-update").textContent = ts ? new Date(ts * 1000).toLocaleDateString() : "—";
+      document.getElementById("idx-ago").textContent = ts ? humanAgo(ts) : "—";
+      document.getElementById("rail-notes").textContent = idx.notes ?? 0;
+    } catch (e) { factsEl.textContent = "Could not load."; }
+  }
+  function formatBytes(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / 1024 / 1024).toFixed(1) + " MB";
+  }
+  function humanAgo(ts) {
+    const sec = (Date.now() / 1000) - ts;
+    if (sec < 60) return "just now";
+    if (sec < 3600) return Math.floor(sec / 60) + " min ago";
+    if (sec < 86400) return Math.floor(sec / 3600) + " hr ago";
+    return Math.floor(sec / 86400) + " days ago";
+  }
+
+  async function loadSkills() {
+    const grid = document.getElementById("skillGrid");
+    grid.innerHTML = "Loading…";
+    try {
+      const r = await fetch("/api/skills"); const d = await r.json();
+      grid.innerHTML = "";
+      (d.tools || []).forEach((t) => {
+        const card = document.createElement("div");
+        card.className = "skill-card";
+        const name = document.createElement("div");
+        name.className = "name"; name.textContent = t.name;
+        const desc = document.createElement("div");
+        desc.className = "desc"; desc.textContent = t.description;
+        const args = document.createElement("div");
+        args.className = "args";
+        const keys = Object.keys(t.args || {});
+        args.textContent = keys.length ? "args: " + keys.join(", ") : "(no args)";
+        card.append(name, desc, args);
+        grid.appendChild(card);
+      });
+    } catch (e) { grid.innerHTML = "Could not load skills."; }
+  }
+
+  const PERMS = [
+    {key: "mic",           label: "Microphone",       sub: "Required so Maahi can hear you."},
+    {key: "accessibility", label: "Accessibility",    sub: "Lets Maahi control the keyboard."},
+    {key: "automation",    label: "Automation",       sub: "Calendar / Mail / Reminders / Messages access."},
+    {key: "screen",        label: "Screen Recording", sub: "Required for vision tools."},
+    {key: "disk",          label: "Full Disk Access", sub: "Read Mail and Calendar databases."},
+  ];
+  async function loadPermissions() {
+    const rows = document.getElementById("permRows");
+    rows.innerHTML = '<div style="color:var(--text-dimmer);padding:14px 0;">Checking…</div>';
+    try {
+      const r = await fetch("/api/permissions"); const d = await r.json();
+      const s = d.status || {};
+      rows.innerHTML = "";
+      PERMS.forEach((p) => {
+        const st = s[p.key] || "unknown";
+        const row = document.createElement("div");
+        row.className = "perm-row";
+        const stat = document.createElement("div");
+        stat.className = "stat " + st;
+        const info = document.createElement("div");
+        info.className = "pinfo";
+        info.innerHTML = '<div class="ptitle"></div><div class="psub"></div>';
+        info.firstElementChild.textContent = p.label;
+        info.lastElementChild.textContent = p.sub + " · " + st;
+        const btn = document.createElement("button");
+        btn.className = "btn ghost";
+        btn.textContent = st === "granted" ? "✓ Granted" : "Grant";
+        if (st === "granted") btn.disabled = true;
+        else btn.onclick = () => openPermissionPane(p.key);
+        row.append(stat, info, btn);
+        rows.appendChild(row);
+      });
+    } catch (e) { rows.innerHTML = "Could not probe permissions."; }
+  }
+  async function openPermissionPane(pane) {
+    if (!pane) return;
+    await fetch("/api/permissions/open", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({pane}),
+    });
+  }
+  document.getElementById("recheckBtn").addEventListener("click", loadPermissions);
+
+  async function loadLogs() {
+    const el = document.getElementById("logs");
+    el.textContent = "Loading…";
+    try {
+      const r = await fetch("/api/logs?lines=300"); const d = await r.json();
+      el.textContent = (d.lines || []).join("\n");
+      el.scrollTop = el.scrollHeight;
+    } catch (e) { el.textContent = "Could not load logs."; }
+  }
+  document.getElementById("refreshLogsBtn").addEventListener("click", loadLogs);
+
+  const turnsEl  = document.getElementById("todayTurns");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  let isPaused = false;
+  async function loadToday() {
+    try {
+      const r = await fetch("/api/transcript/today"); const d = await r.json();
+      if (!d.turns || !d.turns.length) { turnsEl.textContent = "No turns yet today."; return; }
+      turnsEl.innerHTML = "";
+      d.turns.forEach((t) => {
+        const div = document.createElement("div");
+        div.style.cssText = "padding:5px 0;border-bottom:1px dashed rgba(255,255,255,0.05);";
+        const who = document.createElement("span");
+        who.style.cssText = "font-size:10px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:0.1em;margin-right:8px;";
+        who.textContent = t.role || "";
+        const txt = document.createElement("span");
+        txt.textContent = t.content || "";
+        div.append(who, txt);
+        turnsEl.appendChild(div);
+      });
+    } catch (e) { turnsEl.textContent = "Could not load."; }
+  }
+  pauseBtn.addEventListener("click", async () => {
+    const next = !isPaused;
+    await fetch("/api/listening", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({paused: next}),
+    });
+    isPaused = next;
+    pauseBtn.textContent = next ? "Resume listening" : "Pause listening";
+  });
+  clearBtn.addEventListener("click", async () => {
+    if (!confirm("Delete today's transcript? This cannot be undone.")) return;
+    await fetch("/api/transcript/clear", {method: "POST"});
+    loadToday();
+  });
+  document.getElementById("refreshTodayBtn").addEventListener("click", loadToday);
+
+  const SUG_M = ["What's on my calendar today?", "Read me my unread emails.", "What are my open reminders?", "What time is it?", "Open Slack."];
+  const SUG_A = ["Search my brain for ICP.", "What did I write about Soulmap?", "Take a screenshot.", "Set volume to 30."];
+  const SUG_E = ["Append to my daily note: shipped Maahi v2.", "Remind me to call Surbhi tomorrow at 9am.", "Play Spotify.", "What's on my calendar tomorrow?"];
+  function renderSuggestions() {
+    const hour = new Date().getHours();
+    const pool = hour < 12 ? SUG_M : hour < 17 ? SUG_A : SUG_E;
+    const wrap = document.getElementById("suggestions");
+    wrap.querySelectorAll(".chip").forEach((c) => c.remove());
+    pool.slice(0, 5).forEach((phrase) => {
+      const chip = document.createElement("span");
+      chip.className = "chip"; chip.textContent = phrase;
+      chip.onclick = () => sendCommand(phrase);
+      wrap.appendChild(chip);
+    });
+  }
+  renderSuggestions();
+  setInterval(renderSuggestions, 60 * 60 * 1000);
+
+  const cmdInput = document.getElementById("cmdInput");
+  const cmdSend  = document.getElementById("cmdSend");
+  async function sendCommand(text) {
+    text = (text || cmdInput.value || "").trim();
+    if (!text) return;
+    cmdInput.value = "";
+    cmdSend.disabled = true;
+    try {
+      await fetch("/api/command", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text}),
+      });
+    } catch (e) {
+      appendErrorCard("command", "Could not submit: " + e);
+    } finally {
+      setTimeout(() => { cmdSend.disabled = false; cmdInput.focus(); }, 200);
+    }
+  }
+  cmdSend.addEventListener("click", () => sendCommand(""));
+  cmdInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendCommand(""); }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "k" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); cmdInput.focus(); cmdInput.select(); }
+  });
+
+  async function loadRailCalendar() {
+    const el = document.getElementById("rail-calendar");
+    try {
+      const r = await fetch("/api/calendar/upcoming?minutes=720"); const d = await r.json();
+      el.innerHTML = "";
+      const events = d.events || d.starting_within || d.calendar || [];
+      if (!events.length) { el.innerHTML = '<div class="empty">Nothing soon.</div>'; return; }
+      events.slice(0, 4).forEach((ev) => {
+        const div = document.createElement("div");
+        div.className = "event-item";
+        const when = (ev.start || ev.start_iso || "").slice(11, 16);
+        div.innerHTML = '<span class="when"></span><span></span>';
+        div.firstElementChild.textContent = when || "—";
+        div.lastElementChild.textContent  = ev.title || ev.summary || "(untitled)";
+        el.appendChild(div);
+      });
+    } catch (e) { el.innerHTML = '<div class="empty">Calendar unavailable.</div>'; }
+  }
+  async function loadRailReminders() {
+    const el = document.getElementById("rail-reminders");
+    try {
+      const r = await fetch("/api/reminders/open?limit=5"); const d = await r.json();
+      el.innerHTML = "";
+      const reminders = d.reminders || d.open || [];
+      if (!reminders.length) { el.innerHTML = '<div class="empty">Inbox zero.</div>'; return; }
+      reminders.slice(0, 5).forEach((rem) => {
+        const div = document.createElement("div");
+        div.className = "event-item";
+        div.innerHTML = '<span class="when">·</span><span></span>';
+        div.lastElementChild.textContent = rem.title || rem.name || String(rem);
+        el.appendChild(div);
+      });
+    } catch (e) { el.innerHTML = '<div class="empty">Reminders unavailable.</div>'; }
+  }
+  loadRailCalendar();
+  loadRailReminders();
+  setInterval(loadRailCalendar, 5 * 60 * 1000);
+  setInterval(loadRailReminders, 5 * 60 * 1000);
+
+  fetch("/api/brain/probe").then((r) => r.json()).then((d) => {
+    if (d.ok) {
+      document.getElementById("rail-probe").textContent = d.elapsed_ms + "ms";
+      document.getElementById("rail-model").textContent = d.model;
+    }
+  }).catch(() => {});
+
+  loadSettings();
+  fetch("/api/memory/index_stats").then((r) => r.json()).then((d) => {
+    document.getElementById("rail-notes").textContent = d.notes ?? 0;
+  }).catch(() => {});
+})();
+</script>
+</body>
+</html>

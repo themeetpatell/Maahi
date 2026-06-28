@@ -1,0 +1,27 @@
+
+  Maahi is waking up.
+  Say:  Hey Maahi, what time is it?
+  Stop: Ctrl-C
+
+/Users/themeetpatel/Startups/Maahi/.venv/lib/python3.13/site-packages/webrtcvad.py:1: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+2026-06-06 16:51:22,181 INFO    maahi :: Maahi boot: starting
+2026-06-06 16:51:22,181 INFO    maahi :: Maahi boot: starting HUD server
+2026-06-06 16:51:22,197 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-06-06 16:51:22,197 INFO    maahi :: Maahi boot: arming listening-state subscriber
+2026-06-06 16:51:22,197 INFO    maahi :: Maahi boot: spawning menu-bar helper (rumps + AppKit load — ~5s)
+2026-06-06 16:51:22,286 INFO    maahi :: Menu-bar helper spawned (pid=66067)
+2026-06-06 16:51:22,287 INFO    maahi :: Maahi boot: arming global hotkey
+2026-06-06 16:51:22,287 INFO    maahi :: Maahi boot: vision watcher (enabled=False)
+2026-06-06 16:51:22,289 INFO    maahi.vision_watcher :: Vision watcher disabled in config.
+2026-06-06 16:51:22,290 INFO    maahi :: Maahi boot: starting wake loop (mic + STT + brain)
+2026-06-06 16:51:22,290 INFO    maahi :: Maahi boot: opening HUD window (pywebview takes the main thread)
+2026-06-06 16:51:22,392 INFO    maahi.hotkey :: Global hotkey armed: cmd+option+m (pynput=<cmd>+<alt>+m)
+2026-06-06 16:51:22,404 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:3b
+2026-06-06 16:51:22,476 WARNING pynput.keyboard.GlobalHotKeys :: This process is not trusted! Input event monitoring will not be possible until it is added to accessibility clients.
+2026-06-06 16:51:22.596 Python[66059:12396320] -[WKWebView _setDrawsTransparentBackground:] is deprecated and should not be used.
+2026-06-06 16:51:22,789 INFO    maahi.hud_server :: HUD WS connected
+2026-06-06 16:51:24,996 INFO    maahi.listener :: Loading faster-whisper model 'tiny.en' on auto (int8)...
+2026-06-06 16:51:25,105 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-06-06 16:51:25,105 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m, idle=45m, eod=21:30, focus=0m).
+2026-06-06 16:51:27,640 INFO    maahi.brain :: Brain prewarm complete: qwen2.5:3b loaded

@@ -1,0 +1,651 @@
+import { useState, useRef, useEffect, useCallback } from "react";
+
+// ─── Lightweight markdown renderer ───────────────────────────
+function renderMarkdown(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    // Italic
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    // Headers
+    .replace(/^### (.+)$/gm, '<div class="md-h3">$1</div>')
+    .replace(/^## (.+)$/gm, '<div class="md-h2">$1</div>')
+    .replace(/^# (.+)$/gm, '<div class="md-h1">$1</div>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr class="md-hr"/>')
+    // List items
+    .replace(/^- (.+)$/gm, '<div class="md-li">$1</div>')
+    .replace(/^\d+\. (.+)$/gm, '<div class="md-oli">$1</div>')
+    // Line breaks
+    .replace(/\n/g, "<br/>");
+  return html;
+}
+
+// ─── Constants ───────────────────────────────────────────────
+const MODES = [
+  { value: "general", label: "General", icon: "M", color: "#0ea5e9" },
+  { value: "ops", label: "Ops", icon: "O", color: "#f59e0b" },
+  { value: "sales", label: "Sales", icon: "S", color: "#10b981" },
+  { value: "soulmap", label: "Soulmap", icon: "S", color: "#ec4899" },
+  { value: "writer", label: "Writer", icon: "W", color: "#a78bfa" },
+  { value: "analyst", label: "Analyst", icon: "A", color: "#6366f1" },
+];
+
+const TOOL_ICONS = {
+  web_search: "search", remember_fact: "brain", recall_memory: "brain",
+  add_task: "check", list_tasks: "list", complete_task: "check-circle",
+  save_note: "file-text", search_notes: "search", get_datetime: "clock",
+  calculate: "hash", generate_document: "file-plus", daily_briefing: "sun",
+};
+
+const QUICK_ACTIONS = [
+  { label: "Morning briefing", msg: "Good morning Maahi! Give me my daily briefing.", icon: "sun" },
+  { label: "Plan today", msg: "What should I focus on today for max impact across Finanshels and Soulmap?", icon: "target" },
+  { label: "Soulmap feature", msg: "Give me one killer feature idea for Soulmap that drives viral growth loops.", icon: "heart" },
+  { label: "Draft email", msg: "Help me draft a professional business email.", icon: "mail" },
+  { label: "Web research", msg: "Search web for latest AI dating app trends and summarize the landscape.", icon: "globe" },
+  { label: "Add task", msg: "Add task: Review Soulmap onboarding flow and document friction points", icon: "plus" },
+  { label: "My tasks", msg: "Show me all my open tasks.", icon: "list" },
+  { label: "Startup advice", msg: "What's the one strategic move I should make this week?", icon: "zap" },
+];
+
+const SLASH_COMMANDS = [
+  { cmd: "/briefing", desc: "Get daily briefing", msg: "Give me my daily briefing with tasks, notes, and priorities." },
+  { cmd: "/tasks", desc: "Show open tasks", msg: "Show me all my open tasks organized by priority." },
+  { cmd: "/search", desc: "Web search", msg: "Search web for " },
+  { cmd: "/note", desc: "Save a note", msg: "Save this as a note: " },
+  { cmd: "/email", desc: "Draft email", msg: "Draft a professional email about " },
+  { cmd: "/sop", desc: "Create SOP", msg: "Create an SOP for " },
+  { cmd: "/calc", desc: "Calculate", msg: "Calculate: " },
+  { cmd: "/memory", desc: "What do you know about me?", msg: "What do you remember about me? Search your memory." },
+  { cmd: "/clear", desc: "New conversation", msg: null },
+];
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+// ─── Components ──────────────────────────────────────────────
+function ToolCallCard({ name, input, result }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="tool-card" onClick={() => setOpen(!open)}>
+      <div className="tool-card-header">
+        <span className="tool-icon">{TOOL_ICONS[name] === "brain" ? "\u{1F9E0}" : TOOL_ICONS[name] === "search" ? "\u{1F50D}" : TOOL_ICONS[name] === "check" ? "\u2705" : TOOL_ICONS[name] === "list" ? "\u{1F4CB}" : TOOL_ICONS[name] === "clock" ? "\u{1F552}" : TOOL_ICONS[name] === "hash" ? "#" : TOOL_ICONS[name] === "sun" ? "\u2600\uFE0F" : "\u{1F4C4}"}</span>
+        <span className="tool-name">{name.replace(/_/g, " ")}</span>
+        {result && <span className="tool-ok">done</span>}
+        <span className="tool-chevron">{open ? "\u25B2" : "\u25BC"}</span>
+      </div>
+      {open && (
+        <div className="tool-card-body">
+          {input && <div className="tool-input"><strong>Input:</strong> {JSON.stringify(input)}</div>}
+          {result && <div className="tool-result" dangerouslySetInnerHTML={{ __html: renderMarkdown(String(result)) }} />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConversationSidebar({ conversations, activeId, onSelect, onNew, onDelete, onClose }) {
+  return (
+    <div className="sidebar">
+      <div className="sidebar-header">
+        <span style={{ fontWeight: 800, fontSize: 15 }}>Conversations</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="sidebar-btn" onClick={onNew}>+ New</button>
+          <button className="sidebar-btn" onClick={onClose}>Close</button>
+        </div>
+      </div>
+      <div className="sidebar-list">
+        {conversations.length === 0 && <div style={{ color: "#64748b", padding: 16, textAlign: "center", fontSize: 13 }}>No saved conversations</div>}
+        {conversations.map(c => (
+          <div key={c.id} className={`sidebar-item ${c.id === activeId ? "active" : ""}`} onClick={() => onSelect(c.id)}>
+            <div className="sidebar-item-title">{c.title || "Untitled"}</div>
+            <div className="sidebar-item-meta">{c.count} msgs &middot; {new Date(c.updatedAt).toLocaleDateString()}</div>
+            <button className="sidebar-item-del" onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}>x</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MemoryPanel({ onClose }) {
+  const [mem, setMem] = useState({ facts: {}, categories: {} });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/memory").then(r => r.json()).then(d => { setMem(d); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const handleClear = async () => {
+    await fetch("/api/memory", { method: "DELETE" });
+    setMem({ facts: {}, categories: {} });
+  };
+
+  const facts = Object.entries(mem.facts || {});
+  const categories = Object.keys(mem.categories || {});
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 18 }}>Maahi Memory</div>
+            <div style={{ color: "#38bdf8", fontSize: 12 }}>{facts.length} facts &middot; {categories.length} categories</div>
+          </div>
+          <button className="modal-close" onClick={onClose}>Close</button>
+        </div>
+        {loading ? <div style={{ color: "#64748b", textAlign: "center", padding: 32 }}>Loading...</div> :
+          facts.length === 0 ? <div style={{ color: "#64748b", textAlign: "center", padding: 32 }}>No memories yet. Start chatting!</div> :
+          <div className="memory-grid">
+            {facts.map(([k, v], i) => (
+              <div key={i} className="memory-card">
+                <div className="memory-key">{k.replace(/_/g, " ")}</div>
+                <div className="memory-val">{typeof v === "object" ? v.value : v}</div>
+                {typeof v === "object" && v.category && <div className="memory-cat">{v.category}</div>}
+              </div>
+            ))}
+          </div>
+        }
+        <button className="btn-danger" onClick={handleClear}>Clear all memory</button>
+      </div>
+    </div>
+  );
+}
+
+function MaahiOrb({ listening, speaking, mode }) {
+  const modeObj = MODES.find(m => m.value === mode) || MODES[0];
+  return (
+    <div className="orb-wrap">
+      {(listening || speaking) && <>
+        <div className="orb-ping" style={{ background: listening ? "rgba(236,72,153,0.15)" : `${modeObj.color}25` }} />
+        <div className="orb-ping delay" style={{ background: listening ? "rgba(236,72,153,0.2)" : `${modeObj.color}33` }} />
+      </>}
+      <div className="orb-core" style={{
+        background: listening ? "radial-gradient(circle at 35% 35%,#f472b6,#be185d)" : `radial-gradient(circle at 35% 35%,${modeObj.color},${modeObj.color}88)`,
+        boxShadow: `0 0 24px ${listening ? "rgba(236,72,153,0.7)" : modeObj.color}66`,
+      }}>
+        {listening ? "MIC" : speaking ? "SPK" : modeObj.icon}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ────────────────────────────────────────────────
+export default function App() {
+  const [convoId, setConvoId] = useState(genId);
+  const [messages, setMessages] = useState([{ role: "assistant", content: "Hey Meet. I'm here — what's on your mind?" }]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [mode, setMode] = useState("general");
+  const [toolCalls, setToolCalls] = useState([]);
+  const [showMemory, setShowMemory] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [modeOpen, setModeOpen] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [slashOpen, setSlashOpen] = useState(false);
+  const [slashFilter, setSlashFilter] = useState("");
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+  const recRef = useRef(null);
+  const synthRef = useRef(window.speechSynthesis);
+  const voicesRef = useRef([]);
+
+  // Load voices
+  useEffect(() => {
+    const load = () => { voicesRef.current = synthRef.current.getVoices(); };
+    load(); synthRef.current.onvoiceschanged = load;
+  }, []);
+
+  // Auto-scroll
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading, toolCalls]);
+
+  // Load conversations list
+  const loadConvos = useCallback(async () => {
+    try { const r = await fetch("/api/conversations"); const d = await r.json(); setConversations(d.conversations || []); } catch {}
+  }, []);
+  useEffect(() => { loadConvos(); }, [loadConvos]);
+
+  // Save conversation on message change
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    const title = messages.find(m => m.role === "user")?.content?.slice(0, 60) || "Untitled";
+    const timeout = setTimeout(() => {
+      fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: convoId, title, messages }),
+      }).then(() => loadConvos()).catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timeout);
+  }, [messages, convoId, loadConvos]);
+
+  // Voice
+  const getVoice = () => {
+    const v = voicesRef.current;
+    return v.find(x => x.lang?.startsWith("en-IN")) || v.find(x => x.lang?.startsWith("en")) || v[0] || null;
+  };
+  const speakText = useCallback((text) => {
+    const s = synthRef.current; s.cancel();
+    const clean = text.replace(/[*_`#<>[\]]/g, "").replace(/\n/g, " ").trim();
+    if (!clean) return;
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate = 0.95; u.pitch = 1.1; u.volume = 1;
+    const v = getVoice(); if (v) u.voice = v;
+    u.onstart = () => setSpeaking(true);
+    u.onend = () => setSpeaking(false);
+    u.onerror = () => setSpeaking(false);
+    s.speak(u);
+  }, []);
+
+  const toggleVoice = () => {
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
+    if (listening) { recRef.current?.stop(); setListening(false); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r = new SR(); r.lang = "en-IN"; r.continuous = false; r.interimResults = false;
+    r.onstart = () => setListening(true);
+    r.onresult = e => { setListening(false); sendMessage(e.results[0][0].transcript); };
+    r.onerror = () => setListening(false);
+    r.onend = () => setListening(false);
+    recRef.current = r; r.start();
+  };
+
+  // ─── Send message with streaming ──────────────────────────
+  const sendMessage = async (text) => {
+    if (!text?.trim() || loading) return;
+
+    const userMsg = { role: "user", content: text.trim() };
+    const newMsgs = [...messages, userMsg, { role: "assistant", content: "" }];
+    setMessages(newMsgs);
+    setInput("");
+    setToolCalls([]);
+    setLoading(true);
+    setSlashOpen(false);
+
+    try {
+      const res = await fetch("/api/chat/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMsg],
+          mode,
+          max_tokens: 2048,
+        }),
+      });
+
+      if (!res.ok || !res.body) throw new Error(`Stream error ${res.status}`);
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "", raw = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const chunks = buf.split("\n\n");
+        buf = chunks.pop() || "";
+
+        for (const chunk of chunks) {
+          const dataLine = chunk.split("\n").find(l => l.startsWith("data:"));
+          if (!dataLine) continue;
+          let payload;
+          try { payload = JSON.parse(dataLine.replace(/^data:\s*/, "")); } catch { continue; }
+
+          if (payload.type === "token") {
+            raw += payload.text || "";
+            setMessages(prev => {
+              const next = [...prev];
+              const idx = next.length - 1;
+              if (idx >= 0 && next[idx].role === "assistant") next[idx] = { ...next[idx], content: raw };
+              return next;
+            });
+          }
+          if (payload.type === "tool_call") {
+            setToolCalls(prev => [...prev, { name: payload.name, input: payload.input, result: null }]);
+          }
+          if (payload.type === "tool_result") {
+            setToolCalls(prev => prev.map(tc => tc.name === payload.name && !tc.result ? { ...tc, result: payload.result } : tc));
+          }
+          if (payload.type === "done") {
+            raw = payload.text || raw;
+          }
+          if (payload.type === "error") {
+            throw new Error(payload.message);
+          }
+        }
+      }
+
+      // Final update
+      setMessages(prev => {
+        const next = [...prev];
+        const idx = next.length - 1;
+        if (idx >= 0 && next[idx].role === "assistant") next[idx] = { ...next[idx], content: raw };
+        return next;
+      });
+      if (voiceMode && raw) speakText(raw);
+    } catch (e) {
+      setMessages(prev => {
+        const next = prev.filter((m, i) => !(i === prev.length - 1 && m.role === "assistant" && !m.content));
+        return [...next, { role: "assistant", content: `Connection error: ${e.message}. Check server logs.` }];
+      });
+    }
+    setLoading(false);
+  };
+
+  // ─── Conversation management ──────────────────────────────
+  const newConversation = () => {
+    setConvoId(genId());
+    setMessages([{ role: "assistant", content: "New conversation. What's on your mind, Meet?" }]);
+    setToolCalls([]);
+    setShowSidebar(false);
+  };
+
+  const loadConversation = async (id) => {
+    try {
+      const r = await fetch(`/api/conversations/${id}`);
+      const c = await r.json();
+      if (c?.messages) { setConvoId(c.id); setMessages(c.messages); setToolCalls([]); setShowSidebar(false); }
+    } catch {}
+  };
+
+  const deleteConvo = async (id) => {
+    await fetch(`/api/conversations/${id}`, { method: "DELETE" });
+    if (id === convoId) newConversation();
+    loadConvos();
+  };
+
+  // ─── Input handling ────────────────────────────────────────
+  const handleInput = (e) => {
+    const val = e.target.value;
+    setInput(val);
+    if (val.startsWith("/")) {
+      setSlashOpen(true);
+      setSlashFilter(val.slice(1).toLowerCase());
+    } else {
+      setSlashOpen(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      // Handle slash commands
+      const slash = SLASH_COMMANDS.find(s => input.toLowerCase().startsWith(s.cmd));
+      if (slash) {
+        if (slash.cmd === "/clear") { newConversation(); return; }
+        const extra = input.slice(slash.cmd.length).trim();
+        sendMessage(slash.msg + extra);
+      } else {
+        sendMessage(input);
+      }
+    }
+  };
+
+  const handleSlash = (cmd) => {
+    if (cmd.cmd === "/clear") { newConversation(); setSlashOpen(false); return; }
+    setInput(cmd.msg);
+    setSlashOpen(false);
+    inputRef.current?.focus();
+  };
+
+  const filteredSlash = SLASH_COMMANDS.filter(s => !slashFilter || s.cmd.slice(1).includes(slashFilter) || s.desc.toLowerCase().includes(slashFilter));
+  const modeObj = MODES.find(m => m.value === mode) || MODES[0];
+
+  return (
+    <div className="app">
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .app { min-height:100vh; background:linear-gradient(145deg,#050a15 0%,#0a1628 50%,#0f1d32 100%); font-family:'Inter','Segoe UI',sans-serif; display:flex; flex-direction:column; color:#e2e8f0; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:rgba(56,189,248,0.25);border-radius:3px}
+        textarea:focus,select:focus,button:focus{outline:none}
+
+        /* Animations */
+        @keyframes orbping { 75%,100%{transform:scale(2.2);opacity:0} }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes slideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+
+        .msg-in { animation:fadeUp 0.25s ease forwards; }
+
+        /* Glass */
+        .glass { background:rgba(255,255,255,0.03); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.06); }
+
+        /* Header */
+        .header { padding:10px 16px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; gap:8px; }
+        .header-left { display:flex; align-items:center; gap:10px; }
+        .header-logo { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b1020; }
+        .header-title { font-weight:800;font-size:16px;letter-spacing:0.5px;color:#fff; }
+        .header-sub { font-size:9px;letter-spacing:2px;text-transform:uppercase; }
+        .header-controls { display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end; }
+
+        /* Buttons */
+        .ctrl-btn { padding:5px 10px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;font-size:11px;font-weight:700;background:rgba(255,255,255,0.05);color:#94a3b8;transition:all 0.2s; }
+        .ctrl-btn:hover { background:rgba(255,255,255,0.1);color:#e2e8f0; }
+        .ctrl-btn.active { background:rgba(14,165,233,0.2);color:#7dd3fc;border-color:rgba(56,189,248,0.4); }
+
+        /* Mode dropdown */
+        .mode-dropdown { position:absolute;top:calc(100% + 6px);right:0;background:#0d1829;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:4px;display:flex;flex-direction:column;gap:2px;z-index:30;min-width:110px;box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+        .mode-drop-item { padding:7px 12px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:700;text-align:left;transition:all 0.15s;letter-spacing:0.3px; }
+        .mode-drop-item:hover { background:rgba(255,255,255,0.07)!important; }
+
+        /* Messages */
+        .msgs { flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;max-width:800px;width:100%;margin:0 auto; }
+        .msg-row { display:flex;gap:8px;align-items:flex-start; }
+        .msg-row.user { justify-content:flex-end; }
+        .msg-avatar { width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:2px; }
+        .msg-bubble { max-width:78%;padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.7; }
+        .msg-bubble.user { background:linear-gradient(135deg,#1e40af,#3b82f6);border-bottom-right-radius:4px;color:#fff; }
+        .msg-bubble.ai { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-bottom-left-radius:4px; }
+
+        /* Markdown in messages */
+        .msg-bubble .md-h1 { font-size:16px;font-weight:800;margin:8px 0 4px;color:#f8fafc; }
+        .msg-bubble .md-h2 { font-size:14px;font-weight:700;margin:6px 0 3px;color:#f1f5f9; }
+        .msg-bubble .md-h3 { font-size:13px;font-weight:700;margin:4px 0 2px;color:#e2e8f0; }
+        .msg-bubble .md-li { padding-left:12px;position:relative; }
+        .msg-bubble .md-li::before { content:"\\2022";position:absolute;left:0;color:#38bdf8; }
+        .msg-bubble .md-oli { padding-left:16px; }
+        .msg-bubble .md-hr { border:none;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0; }
+        .msg-bubble strong { color:#7dd3fc; }
+        .msg-bubble em { color:#fbbf24; }
+        .msg-bubble .code-block { background:rgba(0,0,0,0.4);border-radius:8px;padding:10px;margin:6px 0;font-family:'JetBrains Mono',monospace;font-size:12px;overflow-x:auto;color:#a5f3fc; }
+        .msg-bubble .inline-code { background:rgba(56,189,248,0.15);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#7dd3fc; }
+
+        /* Tool cards */
+        .tools-section { display:flex;flex-direction:column;gap:6px;max-width:800px;width:100%;margin:0 auto;padding:0 16px; }
+        .tool-card { background:rgba(14,165,233,0.06);border:1px solid rgba(14,165,233,0.15);border-radius:10px;padding:8px 12px;cursor:pointer;transition:all 0.2s;animation:slideIn 0.3s ease; }
+        .tool-card:hover { background:rgba(14,165,233,0.1); }
+        .tool-card-header { display:flex;align-items:center;gap:8px;font-size:12px; }
+        .tool-icon { font-size:14px; }
+        .tool-name { font-weight:700;color:#7dd3fc;text-transform:capitalize; }
+        .tool-ok { font-size:10px;color:#22c55e;margin-left:auto; }
+        .tool-chevron { font-size:9px;color:#475569;margin-left:4px; }
+        .tool-card-body { margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#94a3b8;line-height:1.5; }
+        .tool-input { margin-bottom:6px;word-break:break-all; }
+        .tool-result { color:#cbd5e1; }
+        .tool-result strong { color:#7dd3fc; }
+
+        /* Quick actions */
+        .quick-grid { display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:8px; }
+        .quick-btn { padding:7px 14px;border-radius:18px;font-size:11px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;transition:all 0.2s;font-weight:600; }
+        .quick-btn:hover { background:rgba(56,189,248,0.15);color:#bae6fd;border-color:rgba(56,189,248,0.3);transform:translateY(-1px); }
+
+        /* Orb */
+        .orb-wrap { position:relative;display:flex;align-items:center;justify-content:center;width:90px;height:90px;cursor:pointer; }
+        .orb-ping { position:absolute;width:90px;height:90px;border-radius:50%;animation:orbping 1.2s cubic-bezier(0,0,0.2,1) infinite; }
+        .orb-ping.delay { width:72px;height:72px;animation-delay:0.4s; }
+        .orb-core { width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;transition:all 0.3s;letter-spacing:1px; }
+
+        /* Input */
+        .input-wrap { padding:6px 16px 14px;max-width:800px;width:100%;margin:0 auto; }
+        .input-box { border-radius:14px;display:flex;align-items:flex-end;gap:6px;padding:6px 6px 6px 12px; }
+        .input-area { flex:1;background:transparent;border:none;color:#f1f5f9;font-size:13px;resize:none;line-height:1.5;padding:6px 0;max-height:120px;overflow-y:auto;font-family:inherit; }
+        .send-btn { width:36px;height:36px;border-radius:10px;border:none;cursor:pointer;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;font-weight:700; }
+
+        /* Slash menu */
+        .slash-menu { position:absolute;bottom:100%;left:0;right:0;background:#0f172a;border:1px solid rgba(56,189,248,0.2);border-radius:12px;margin-bottom:6px;max-height:240px;overflow-y:auto;z-index:20; }
+        .slash-item { padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.15s; }
+        .slash-item:hover { background:rgba(56,189,248,0.1); }
+        .slash-cmd { font-weight:700;color:#7dd3fc;font-size:13px;font-family:monospace; }
+        .slash-desc { color:#94a3b8;font-size:12px; }
+
+        /* Sidebar */
+        .sidebar { position:fixed;left:0;top:0;bottom:0;width:280px;background:#0a1225;border-right:1px solid rgba(255,255,255,0.06);z-index:50;display:flex;flex-direction:column;animation:slideIn 0.2s ease; }
+        .sidebar-header { padding:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);color:#e2e8f0; }
+        .sidebar-btn { padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#94a3b8;cursor:pointer;font-size:11px;font-weight:600; }
+        .sidebar-btn:hover { background:rgba(56,189,248,0.15);color:#7dd3fc; }
+        .sidebar-list { flex:1;overflow-y:auto;padding:8px; }
+        .sidebar-item { padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:4px;transition:background 0.15s;position:relative; }
+        .sidebar-item:hover,.sidebar-item.active { background:rgba(56,189,248,0.08); }
+        .sidebar-item.active { border-left:2px solid #38bdf8; }
+        .sidebar-item-title { font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:20px; }
+        .sidebar-item-meta { font-size:10px;color:#64748b;margin-top:2px; }
+        .sidebar-item-del { position:absolute;right:8px;top:10px;background:none;border:none;color:#475569;cursor:pointer;font-size:12px; }
+        .sidebar-item-del:hover { color:#f87171; }
+
+        /* Modal */
+        .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px; }
+        .modal-box { background:#0f172a;border:1px solid rgba(56,189,248,0.2);border-radius:18px;padding:20px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto; }
+        .modal-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; }
+        .modal-close { background:rgba(255,255,255,0.08);border:none;color:#94a3b8;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px; }
+        .memory-grid { display:flex;flex-direction:column;gap:6px; }
+        .memory-card { background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:8px 12px; }
+        .memory-key { color:#7dd3fc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+        .memory-val { color:#e2e8f0;font-size:13px;margin-top:3px; }
+        .memory-cat { display:inline-block;font-size:9px;color:#64748b;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:6px;margin-top:4px; }
+        .btn-danger { margin-top:16px;width:100%;padding:8px;border-radius:10px;border:1px solid rgba(239,68,68,0.25);background:rgba(239,68,68,0.08);color:#f87171;cursor:pointer;font-size:12px;font-weight:600; }
+        .btn-danger:hover { background:rgba(239,68,68,0.15); }
+
+        /* Loading dots */
+        .dot { width:6px;height:6px;border-radius:50%;background:#7dd3fc;animation:bounce 1.2s infinite; }
+
+        /* Responsive */
+        @media (max-width:640px) {
+          .header-controls { gap:4px; }
+          .mode-btn { padding:3px 7px;font-size:9px; }
+          .ctrl-btn { padding:4px 8px;font-size:10px; }
+          .sidebar { width:260px; }
+        }
+      `}</style>
+
+      {/* Sidebar */}
+      {showSidebar && <ConversationSidebar conversations={conversations} activeId={convoId} onSelect={loadConversation} onNew={newConversation} onDelete={deleteConvo} onClose={() => setShowSidebar(false)} />}
+
+      {/* Header */}
+      <div className="header glass">
+        <div className="header-left">
+          <button className="ctrl-btn" onClick={() => setShowSidebar(s => !s)} style={{ padding: "5px 8px" }}>&#9776;</button>
+          <div className="header-logo" style={{ background: `radial-gradient(circle at 35% 35%,${modeObj.color},${modeObj.color}88)` }}>{modeObj.icon}</div>
+          <div>
+            <div className="header-title">MAAHI</div>
+            <div className="header-sub" style={{ color: modeObj.color }}>{listening ? "LISTENING" : speaking ? "SPEAKING" : modeObj.label.toUpperCase()}</div>
+          </div>
+        </div>
+        <div className="header-controls">
+          <div style={{ position: "relative" }}>
+            <button className="ctrl-btn" onClick={() => setModeOpen(o => !o)} style={{ color: modeObj.color, borderColor: `${modeObj.color}55`, minWidth: 72 }}>
+              {modeObj.label} <span style={{ fontSize: 8, opacity: 0.7 }}>▾</span>
+            </button>
+            {modeOpen && (
+              <div className="mode-dropdown" onMouseLeave={() => setModeOpen(false)}>
+                {MODES.map(m => (
+                  <button key={m.value} className="mode-drop-item" onClick={() => { setMode(m.value); setModeOpen(false); }} style={{ color: mode === m.value ? m.color : "#94a3b8", background: mode === m.value ? `${m.color}15` : "transparent" }}>
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button className={`ctrl-btn ${voiceMode ? "active" : ""}`} onClick={() => { setVoiceMode(!voiceMode); synthRef.current.cancel(); setSpeaking(false); }}>
+            {voiceMode ? "Voice On" : "Voice"}
+          </button>
+          <button className="ctrl-btn" onClick={() => setShowMemory(true)}>Memory</button>
+          <button className="ctrl-btn" onClick={newConversation}>New</button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="msgs">
+        {messages.length <= 1 && (
+          <div className="quick-grid">
+            {QUICK_ACTIONS.map((q, i) => (
+              <button key={i} className="quick-btn" onClick={() => sendMessage(q.msg)}>{q.label}</button>
+            ))}
+          </div>
+        )}
+
+        {messages.map((m, i) => (
+          <div key={i} className={`msg-row ${m.role === "user" ? "user" : ""} msg-in`}>
+            {m.role === "assistant" && <div className="msg-avatar" style={{ background: `radial-gradient(circle at 35% 35%,${modeObj.color},${modeObj.color}88)`, color: "#fff" }}>{modeObj.icon}</div>}
+            <div className={`msg-bubble ${m.role === "user" ? "user" : "ai"}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} />
+            {m.role === "user" && <div className="msg-avatar" style={{ background: "linear-gradient(135deg,#1e40af,#3b82f6)", color: "#fff" }}>M</div>}
+          </div>
+        ))}
+
+        {loading && !messages[messages.length - 1]?.content && (
+          <div className="msg-row msg-in">
+            <div className="msg-avatar" style={{ background: `radial-gradient(circle at 35% 35%,${modeObj.color},${modeObj.color}88)`, color: "#fff" }}>{modeObj.icon}</div>
+            <div className="msg-bubble ai" style={{ display: "flex", gap: 5, alignItems: "center" }}>
+              {[0, 1, 2].map(i => <div key={i} className="dot" style={{ animationDelay: `${i * 0.2}s` }} />)}
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Tool calls display */}
+      {toolCalls.length > 0 && (
+        <div className="tools-section">
+          {toolCalls.map((tc, i) => <ToolCallCard key={i} name={tc.name} input={tc.input} result={tc.result} />)}
+        </div>
+      )}
+
+      {/* Orb */}
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 4 }} onClick={toggleVoice}>
+        <MaahiOrb listening={listening} speaking={speaking} mode={mode} />
+      </div>
+      <div style={{ textAlign: "center", fontSize: 10, color: "#475569", letterSpacing: 1, marginTop: -6, marginBottom: 2 }}>
+        {listening ? "LISTENING..." : speaking ? "SPEAKING..." : "TAP TO SPEAK"}
+      </div>
+
+      {/* Input */}
+      <div className="input-wrap">
+        <div style={{ position: "relative" }}>
+          {slashOpen && filteredSlash.length > 0 && (
+            <div className="slash-menu">
+              {filteredSlash.map((s, i) => (
+                <div key={i} className="slash-item" onClick={() => handleSlash(s)}>
+                  <span className="slash-cmd">{s.cmd}</span>
+                  <span className="slash-desc">{s.desc}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="input-box glass">
+            <textarea ref={inputRef} value={input} onChange={handleInput} onKeyDown={handleKeyDown} placeholder="Ask Maahi anything... (/ for commands)" rows={1} className="input-area" />
+            <button onClick={() => sendMessage(input)} disabled={loading || !input.trim()} className="send-btn" style={{ background: input.trim() ? `linear-gradient(135deg,${modeObj.color},${modeObj.color}cc)` : "rgba(255,255,255,0.05)" }}>
+              &#x2191;
+            </button>
+          </div>
+        </div>
+        <div style={{ textAlign: "center", color: "#334155", fontSize: 9, marginTop: 5, letterSpacing: 0.5 }}>
+          Maahi &middot; Type / for commands
+        </div>
+      </div>
+
+      {/* Memory modal */}
+      {showMemory && <MemoryPanel onClose={() => setShowMemory(false)} />}
+    </div>
+  );
+}

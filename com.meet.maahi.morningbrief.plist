@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Morning Brief — launchd plist
+  Install:
+    cp com.meet.maahi.morningbrief.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.meet.maahi.morningbrief.plist
+  Uninstall:
+    launchctl unload ~/Library/LaunchAgents/com.meet.maahi.morningbrief.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.meet.maahi.morningbrief</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-lc</string>
+        <string>cd "/Users/themeetpatel/Startups/Maahi" &amp;&amp; ./.venv/bin/python -m maahi.briefer</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/themeetpatel/Startups/Maahi/logs/briefer.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/themeetpatel/Startups/Maahi/logs/briefer.err.log</string>
+</dict>
+</plist>

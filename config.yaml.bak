@@ -1,0 +1,200 @@
+# ============================================================
+#  MAAHI — config.yaml
+#  Edit this file. Everything below is hot-reloadable.
+# ============================================================
+
+owner:
+  name: "Meet"
+  email: "meet@finanshels.com"
+  # Maahi knows you. Add anything she should always remember.
+  bio: |
+    Founder and CEO. Builds AI-native ventures.
+    Companies: Finanshels (UAE accounting SaaS), BiggDate (dating/relationships),
+    Soulmap, ZeroHuman, StartupOS, BiggFam, MediCore HMS, Biggbizz.
+    Operates from Dubai. Family man (wife: Maahi — yes, the assistant's namesake
+    is a tribute, not a coincidence). Optimizes for execution velocity,
+    AI-native systems, and brutal clarity.
+
+wake:
+  # Phrase Maahi listens for. Lowercase. Multiple variants supported.
+  phrases:
+    - "hey maahi"
+    - "maahi"
+    - "hey mahi"
+  # openwakeword | whisper_loop
+  # 'whisper_loop' is the fallback that doesn't need a custom wake model.
+  engine: "whisper_loop"
+  # Energy threshold for VAD (0.0–1.0). Lower = more sensitive.
+  vad_threshold: 0.5
+  # Seconds of silence that end an utterance. Lower = snappier, but risks
+  # cutting you off mid-pause. 0.6 feels close to Siri.
+  silence_seconds: 0.6
+
+stt:
+  # faster-whisper model. tiny.en → base.en → small.en → medium.en
+  # tiny.en is fastest. small.en is the sweet spot on Apple Silicon.
+  model: "small.en"
+  device: "auto"          # auto | cpu | mps | cuda
+  compute_type: "int8"    # int8 (fastest on Mac) | float16 | float32
+  language: "en"
+
+brain:
+  # Ollama config. Make sure Ollama is running: `ollama serve`
+  provider: "ollama"
+  host: "http://localhost:11434"
+  # Tool-calling models that work well locally:
+  #   qwen2.5:14b   — best quality with tools (default)
+  #   qwen2.5:7b    — faster, still solid
+  #   llama3.3:70b  — most capable, needs >=48GB RAM
+  #   llama3.2:3b   — speed demon, weaker reasoning
+  model: "qwen2.5:14b"
+  temperature: 0.4
+  max_tokens: 256
+  # Maximum tool-call loop depth before bailing out
+  max_iterations: 8
+
+tts:
+  # TTS engine: "piper" (neural, local, far better quality) or "say"
+  # (macOS built-in). Piper falls back to `say` automatically if the
+  # piper binary or the voice file is missing.
+  engine: "piper"
+  # Piper voice .onnx path. Empty = <project>/voices/en_US-lessac-medium.onnx
+  # (downloaded by setup.sh).
+  piper_voice: ""
+  # macOS `say` voice — used when engine is "say" or as the Piper fallback.
+  # Run `say -v ?` in Terminal to see your installed voices.
+  # Best high-quality picks: "Samantha", "Daniel", "Karen", "Serena",
+  # or Siri Premium voices like "Ava (Premium)", "Zoe (Premium)".
+  voice: "Samantha"
+  rate: 200          # words per minute. 175 default. 200–220 feels natural for assistants.
+  # If true, Maahi speaks first sentence as soon as it streams in (lower latency)
+  stream: true
+
+vault:
+  # Your Obsidian vault root. Everything Maahi remembers lives here.
+  path: "/Users/themeetpatel/Startups/My brain"
+  # Where she dumps her own notes (conversation logs, learned facts)
+  memory_dir: "/Users/themeetpatel/Startups/My brain/maahi/memory"
+  daily_notes_dir: "10 Daily"   # PARA-style daily notes folder
+
+logging:
+  level: "INFO"       # DEBUG | INFO | WARNING | ERROR
+  path: "/Users/themeetpatel/Startups/Maahi/logs/maahi.log"
+
+# ============================================================
+#  HUD — The Jarvis dashboard.
+#  Floating, always-on-top, transparent panel.
+#  Idle = a pulsing dot. Wake = expands to live state.
+# ============================================================
+hud:
+  enabled: true
+  port: 7421
+  width: 420
+  height: 220
+  x: 40                # screen x; negative = offset from right edge
+  y: -60               # screen y; negative = offset from bottom edge
+  always_on_top: true
+  transparent: true
+  collapse_seconds: 8  # auto-collapse to pulse dot after idle window
+
+# ============================================================
+#  VISION — On-demand screen understanding via Ollama multimodal.
+#  Strict local. No frame ever leaves the Mac.
+# ============================================================
+vision:
+  model: "qwen2.5vl:7b"
+  max_image_side: 1280
+  jpeg_quality: 80
+  scratch_dir: "/Users/themeetpatel/Startups/Maahi/logs/vision"
+
+# ============================================================
+#  CONTROL — Cursor, keyboard, Accessibility actions.
+# ============================================================
+control:
+  enabled: true
+  require_confirm_for_clicks: false
+  cursor_smooth_pxps: 1800
+
+# ============================================================
+#  PROACTIVE — Maahi speaks up unprompted.
+#  Watches the calendar, idle time, and end-of-day window.
+# ============================================================
+proactive:
+  enabled: true
+  poll_seconds: 60      # how often she checks the calendar
+  lead_minutes: 5       # warn this many minutes before an event starts
+  # Extra triggers (all optional). Set to 0/false to disable any one.
+  idle_minutes: 45      # after this many minutes of no input, offer a check-in
+  end_of_day_hour: 21   # hour (0-23) to speak the daily wrap-up
+  end_of_day_minute: 30 # minute of the EOD trigger
+  focus_drift_minutes: 0  # 0 = off; warn if same distracting app frontmost N min
+
+# ============================================================
+#  VISION WATCHER — rolling, throttled screen awareness.
+#  Strictly opt-in. Every snapshot stays local. Used to give Maahi
+#  ambient context ("what's Meet doing right now") without spamming
+#  the model on every frame.
+# ============================================================
+vision_watcher:
+  enabled: false        # flip true to enable continuous screen awareness
+  interval_seconds: 45  # capture cadence (don't go below 20s)
+  buffer_size: 6        # how many recent descriptions to keep in memory
+  # If true, captures pause when the front app is in this denylist (privacy).
+  privacy_apps:
+    - "1Password"
+    - "Bitwarden"
+    - "Messages"
+    - "Mail"
+    - "Signal"
+
+# ============================================================
+#  HOTKEY — global keyboard shortcut for force-wake.
+#  Press anywhere on the system to open a 6-second command window.
+# ============================================================
+hotkey:
+  enabled: true
+  # macOS keys: cmd, ctrl, alt (option), shift + a letter.
+  combo: "cmd+option+m"
+
+# ============================================================
+#  HUD AUTH — token check on REST + WS to prevent local processes
+#  from driving Maahi without your blessing. Empty = no auth (legacy).
+#  Set the token here OR via env MAAHI_HUD_TOKEN. Env wins.
+# ============================================================
+hud_auth:
+  token: ""             # set a long random string, or leave blank to disable
+
+# ============================================================
+#  BARGE-IN — interrupt Maahi mid-sentence by speaking.
+#  Matches the wake phrase or a stop phrase (not raw volume), so
+#  her own voice echoing back won't cut her off. Best with headphones.
+# ============================================================
+barge_in:
+  enabled: true
+  # Say any of these while she's talking and she stops immediately.
+  stop_words:
+    - "maahi stop"
+    - "stop talking"
+    - "stop maahi"
+    - "be quiet"
+    - "shut up"
+
+# Hard safety rails on shell tool. Maahi can ONLY run commands whose first token
+# is in this allowlist. Add more carefully.
+shell_allowlist:
+  - "ls"
+  - "pwd"
+  - "echo"
+  - "date"
+  - "uptime"
+  - "df"
+  - "du"
+  - "uname"
+  - "whoami"
+  - "ps"
+  - "open"
+  - "say"
+  - "pmset"
+  - "system_profiler"
+  - "networksetup"
+  - "ioreg"
