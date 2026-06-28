@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#070b10">
+<title>MAAHI · operator</title>
+<style>
+  /* ============================================================
+     MAAHI command-center — JARVIS-grade cockpit
+     One file. No external anything. System fonts only.
+     ============================================================ */
+  :root{
+    --bg:#070b10;
+    --bg2:#0a0f16;
+    --panel:rgba(17,24,34,.62);
+    --panel-solid:#0e141d;
+    --glass-border:rgba(120,160,190,.12);
+    --glass-border-strong:rgba(140,190,220,.22);
+    --ink:#dceaf2;
+    --ink-dim:#8fa7b7;
+    --ink-faint:#5e7282;
+    --accent:#22d3ee;
+    --accent-deep:#0891b2;
+    --accent-soft:rgba(34,211,238,.14);
+    --accent-line:rgba(34,211,238,.34);
+    --ok:#34d399;
+    --ok-soft:rgba(52,211,153,.14);
+    --warn:#fbbf24;
+    --warn-soft:rgba(251,191,36,.13);
+    --bad:#fb7185;
+    --bad-soft:rgba(251,113,133,.13);
+    --grey:#46586a;
+    --radius:16px;
+    --radius-sm:11px;
+    --shadow:0 18px 50px -22px rgba(0,0,0,.85);
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 620px at 82% -8%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(900px 520px at 6% 4%, rgba(56,120,160,.10), transparent 55%),
+      radial-gradient(700px 900px at 100% 110%, rgba(8,145,178,.08), transparent 60%),
+      linear-gradient(180deg, var(--bg2), var(--bg) 60%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  /* faint scanline / grid texture, very subtle */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.45;
+    background-image:
+      linear-gradient(rgba(120,170,200,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,200,.025) 1px, transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(circle at 50% 20%, #000 0%, transparent 78%);
+  }
+  ::selection{background:rgba(34,211,238,.28);color:#eafcff}
+  a{color:var(--accent);text-decoration:none}
+
+  /* scrollbars */
+  *::-webkit-scrollbar{width:10px;height:10px}
+  *::-webkit-scrollbar-thumb{background:rgba(120,160,190,.16);border-radius:20px;border:2px solid transparent;background-clip:padding-box}
+  *::-webkit-scrollbar-thumb:hover{background:rgba(120,160,190,.28);background-clip:padding-box}
+  *::-webkit-scrollbar-track{background:transparent}
+  *{scrollbar-width:thin;scrollbar-color:rgba(120,160,190,.2) transparent}
+
+  /* ---------- shell ---------- */
+  .shell{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column;max-width:1680px;margin:0 auto;padding:14px clamp(12px,2.2vw,26px) 26px}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:10px;z-index:30;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 16px;border-radius:var(--radius);
+    background:linear-gradient(180deg, rgba(16,23,33,.82), rgba(11,16,23,.78));
+    border:1px solid var(--glass-border);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(16px) saturate(1.25);
+    -webkit-backdrop-filter:blur(16px) saturate(1.25);
+  }
+  .brand{display:flex;align-items:baseline;gap:11px;min-width:0}
+  .wordmark{
+    font-weight:800;font-size:21px;letter-spacing:.42em;
+    background:linear-gradient(92deg,#eafdff,#9ad8e6 55%,#22d3ee);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    padding-left:.18em;
+    filter:drop-shadow(0 0 16px rgba(34,211,238,.32));
+    white-space:nowrap;
+  }
+  .tagline{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+  .reactor{
+    width:13px;height:13px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 50% 42%, #d7fbff, #22d3ee 52%, #0e7490 90%);
+    box-shadow:0 0 0 3px rgba(34,211,238,.10), 0 0 16px 2px rgba(34,211,238,.55);
+    animation:pulse 3.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(34,211,238,.08),0 0 12px 1px rgba(34,211,238,.42);transform:scale(1)}50%{box-shadow:0 0 0 5px rgba(34,211,238,.05),0 0 22px 4px rgba(34,211,238,.62);transform:scale(1.06)}}
+
+  .topbar .spacer{flex:1 1 auto;min-width:8px}
+  .topctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+  /* brain pill */
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 13px;border-radius:999px;font-size:12.5px;font-weight:600;
+    border:1px solid var(--glass-border-strong);
+    background:rgba(13,19,27,.6);white-space:nowrap;
+    transition:.25s;
+  }
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--grey);flex:none}
+  .pill.on{border-color:rgba(52,211,153,.4);color:#cffbea;background:linear-gradient(180deg,rgba(52,211,153,.14),rgba(52,211,153,.05))}
+  .pill.on .dot{background:var(--ok);box-shadow:0 0 10px 1px rgba(52,211,153,.7)}
+  .pill.off{color:var(--ink-dim)}
+  .pill.off .dot{background:var(--grey)}
+  .model-tag{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.02em;white-space:nowrap;max-width:30ch;overflow:hidden;text-overflow:ellipsis}
+
+  /* segmented autonomy control */
+  .seg{display:inline-flex;padding:3px;border-radius:11px;background:rgba(8,12,18,.7);border:1px solid var(--glass-border);gap:2px}
+  .seg button{
+    appearance:none;border:0;background:transparent;color:var(--ink-dim);
+    font:inherit;font-size:12px;font-weight:600;letter-spacing:.02em;
+    padding:6px 11px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.2s;
+  }
+  .seg button:hover{color:var(--ink)}
+  .seg button.active{
+    color:#062028;
+    background:linear-gradient(180deg,#5fe6f6,#22d3ee);
+    box-shadow:0 4px 14px -4px rgba(34,211,238,.6), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .seg button:disabled{opacity:.55;cursor:default}
+
+  .iconbtn{
+    appearance:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:11px;color:var(--ink-dim);font-size:17px;
+    border:1px solid var(--glass-border);background:rgba(13,19,27,.55);transition:.2s;
+  }
+  .iconbtn:hover{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft);box-shadow:0 0 18px -6px rgba(34,211,238,.6)}
+  .iconbtn:active{transform:translateY(1px)}
+  .iconbtn.spin svg, .iconbtn.spin span{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* auth banner */
+  .banner{
+    margin-top:12px;display:none;align-items:center;gap:12px;
+    padding:11px 15px;border-radius:12px;font-size:13.5px;
+    border:1px solid rgba(251,191,36,.4);background:var(--warn-soft);color:#fde9bd;
+  }
+  .banner.show{display:flex}
+  .banner b{color:#fff7e3}
+  .banner button{margin-left:auto}
+
+  /* ---------- grid ---------- */
+  .grid{
+    margin-top:14px;display:grid;gap:14px;flex:1 1 auto;min-height:0;
+    grid-template-columns:1.55fr 1fr;
+    grid-template-areas:
+      "chat brief"
+      "chat systems"
+      "approvals activity";
+  }
+  @media (max-width:1080px){
+    .grid{grid-template-columns:1fr;grid-template-areas:"chat" "brief" "systems" "approvals" "activity"}
+  }
+  .a-chat{grid-area:chat}
+  .a-brief{grid-area:brief}
+  .a-systems{grid-area:systems}
+  .a-approvals{grid-area:approvals}
+  .a-activity{grid-area:activity}
+
+  .panel{
+    position:relative;display:flex;flex-direction:column;min-height:0;
+    border-radius:var(--radius);
+    background:var(--panel);
+    border:1px solid var(--glass-border);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(14px) saturate(1.2);
+    -webkit-backdrop-filter:blur(14px) saturate(1.2);
+    overflow:hidden;
+  }
+  .panel::before{ /* top hairline glow */
+    content:"";position:absolute;inset:0 0 auto 0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(34,211,238,.5),transparent);
+    opacity:.55;
+  }
+  .panel-head{
+    display:flex;align-items:center;gap:10px;
+    padding:13px 16px;border-bottom:1px solid var(--glass-border);
+    flex:none;
+  }
+  .panel-head h2{
+    margin:0;font-size:11.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-dim);display:flex;align-items:center;gap:9px;
+  }
+  .panel-head h2 .tick{width:5px;height:14px;border-radius:2px;background:linear-gradient(180deg,var(--accent),var(--accent-deep));box-shadow:0 0 10px rgba(34,211,238,.6);flex:none}
+  .panel-head .meta{margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono);letter-spacing:.02em;text-align:right}
+  .panel-body{padding:14px 16px;overflow:auto;flex:1 1 auto;min-height:0}
+
+  .btn{
+    appearance:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;letter-spacing:.01em;
+    padding:7px 13px;border-radius:9px;transition:.18s;white-space:nowrap;
+    color:var(--accent);border:1px solid var(--accent-line);background:var(--accent-soft);
+  }
+  .btn:hover{background:rgba(34,211,238,.2);box-shadow:0 0 18px -6px rgba(34,211,238,.7)}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.5;cursor:default;box-shadow:none}
+  .btn.ghost{color:var(--ink-dim);border-color:var(--glass-border);background:rgba(13,19,27,.5)}
+  .btn.ghost:hover{color:var(--ink);border-color:var(--glass-border-strong);box-shadow:none}
+  .btn.ok{color:#062a1e;border-color:transparent;background:linear-gradient(180deg,#56e3b1,#34d399);box-shadow:0 4px 12px -5px rgba(52,211,153,.7)}
+  .btn.ok:hover{filter:brightness(1.06)}
+  .btn.no{color:#fbc0cb;border-color:rgba(251,113,133,.4);background:var(--bad-soft)}
+  .btn.no:hover{background:rgba(251,113,133,.22)}
+
+  /* status dots */
+  .sdot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--grey);display:inline-block}
+  .sdot.ok{background:var(--ok);box-shadow:0 0 9px 1px rgba(52,211,153,.6)}
+  .sdot.warn{background:var(--warn);box-shadow:0 0 9px 1px rgba(251,191,36,.55)}
+  .sdot.off{background:var(--grey)}
+
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:var(--ink-faint);padding:26px 16px;font-size:13.5px}
+  .empty .big{font-size:25px;opacity:.6}
+  .muted{color:var(--ink-faint)}
+  .err-text{color:var(--bad)}
+
+  /* ============ CHAT ============ */
+  .a-chat{min-height:clamp(440px,62vh,820px)}
+  .chat-scroll{flex:1 1 auto;overflow:auto;padding:16px 16px 6px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
+  .msg{display:flex;gap:11px;max-width:88%;animation:rise .32s cubic-bezier(.2,.7,.3,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse}
+  .ava{
+    width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;letter-spacing:.04em;margin-top:1px;
+  }
+  .msg.maahi .ava{color:#062028;background:linear-gradient(160deg,#7df0ff,#22d3ee);box-shadow:0 0 16px -3px rgba(34,211,238,.7)}
+  .msg.user .ava{color:var(--ink-dim);background:rgba(120,160,190,.14);border:1px solid var(--glass-border)}
+  .bubble{
+    padding:11px 14px;border-radius:14px;font-size:14.5px;line-height:1.58;
+    border:1px solid var(--glass-border);min-width:0;word-wrap:break-word;overflow-wrap:anywhere;
+  }
+  .msg.maahi .bubble{
+    background:linear-gradient(180deg,rgba(20,32,42,.85),rgba(13,22,30,.8));
+    border-color:var(--accent-line);border-top-left-radius:5px;
+    box-shadow:0 0 0 1px rgba(34,211,238,.04), 0 10px 30px -18px rgba(34,211,238,.5);
+  }
+  .msg.user .bubble{background:linear-gradient(180deg,rgba(30,41,55,.8),rgba(22,31,43,.78));border-top-right-radius:5px}
+  .bubble.error{border-color:rgba(251,113,133,.5);background:var(--bad-soft);color:#fecdd3}
+  .bubble p{margin:0 0 .55em}
+  .bubble p:last-child{margin-bottom:0}
+  .bubble code{font-family:var(--mono);font-size:.86em;background:rgba(0,0,0,.35);padding:.1em .4em;border-radius:5px;border:1px solid rgba(120,160,190,.14)}
+  .bubble pre{margin:.5em 0;padding:10px 12px;background:rgba(0,0,0,.4);border:1px solid var(--glass-border);border-radius:9px;overflow:auto}
+  .bubble pre code{background:none;border:0;padding:0}
+  .bubble ul,.bubble ol{margin:.3em 0;padding-left:1.3em}
+  .bubble li{margin:.16em 0}
+  .bubble a{border-bottom:1px solid var(--accent-line)}
+  .bubble strong{color:#eafcff}
+  .cursor{display:inline-block;width:7px;height:1.05em;vertical-align:-2px;margin-left:1px;background:var(--accent);border-radius:1px;animation:blink 1s steps(2) infinite;box-shadow:0 0 8px rgba(34,211,238,.8)}
+  @keyframes blink{50%{opacity:0}}
+
+  /* tool chips */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;max-width:100%;
+    font-family:var(--mono);font-size:11px;letter-spacing:.01em;
+    padding:3px 9px;border-radius:999px;color:var(--ink-dim);
+    border:1px solid var(--glass-border);background:rgba(8,12,18,.6);
+    cursor:default;transition:.2s;
+  }
+  .chip .cd{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;animation:pulse2 1s infinite}
+  @keyframes pulse2{50%{opacity:.3}}
+  .chip.ok{color:#bdeedd;border-color:rgba(52,211,153,.32);background:var(--ok-soft)}
+  .chip.ok .cd{background:var(--ok);animation:none}
+  .chip.failed{color:#fbc0cb;border-color:rgba(251,113,133,.36);background:var(--bad-soft)}
+  .chip.failed .cd{background:var(--bad);animation:none}
+  .chip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* inline confirm card */
+  .confirm{
+    margin-top:10px;border-radius:12px;padding:12px 13px;
+    border:1px solid rgba(251,191,36,.45);background:linear-gradient(180deg,rgba(251,191,36,.10),rgba(251,191,36,.03));
+  }
+  .confirm .ch{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--warn)}
+  .confirm .cs{margin:7px 0 11px;font-size:13.5px;color:#fde6bd;line-height:1.5}
+  .confirm .cb{display:flex;gap:8px}
+  .confirm.resolved{opacity:.7}
+  .confirm .verdict{font-size:12.5px;font-weight:600;margin-top:2px}
+
+  .thinking{display:flex;align-items:center;gap:9px;color:var(--ink-dim);font-size:13px;padding:2px 0}
+  .thinking .d{display:flex;gap:4px}
+  .thinking .d i{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:bob 1.2s infinite}
+  .thinking .d i:nth-child(2){animation-delay:.18s}
+  .thinking .d i:nth-child(3){animation-delay:.36s}
+  @keyframes bob{0%,60%,100%{transform:translateY(0);opacity:.55}30%{transform:translateY(-5px);opacity:1}}
+
+  /* example prompts */
+  .examples{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;height:100%;text-align:center;color:var(--ink-dim);padding:20px}
+  .examples .glyph{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.05em;color:#062028;background:linear-gradient(160deg,#7df0ff,#22d3ee);box-shadow:0 0 30px -6px rgba(34,211,238,.7)}
+  .examples h3{margin:0;font-size:17px;color:var(--ink);font-weight:700;letter-spacing:.01em}
+  .examples .sub{font-size:13px;max-width:42ch;line-height:1.5;color:var(--ink-faint)}
+  .ex-grid{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:560px}
+  .ex{
+    cursor:pointer;font-size:13px;color:var(--ink);padding:9px 14px;border-radius:999px;transition:.2s;
+    border:1px solid var(--glass-border);background:rgba(13,19,27,.5);
+  }
+  .ex:hover{color:#eafcff;border-color:var(--accent-line);background:var(--accent-soft);box-shadow:0 0 20px -8px rgba(34,211,238,.7);transform:translateY(-1px)}
+
+  /* composer */
+  .composer{flex:none;border-top:1px solid var(--glass-border);padding:11px 12px;background:rgba(8,12,18,.5)}
+  .composer .wrap{
+    display:flex;align-items:flex-end;gap:9px;
+    border:1px solid var(--glass-border-strong);border-radius:14px;padding:7px 8px 7px 13px;
+    background:rgba(7,11,16,.7);transition:.2s;
+  }
+  .composer .wrap:focus-within{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft),0 0 26px -10px rgba(34,211,238,.7)}
+  .composer textarea{
+    flex:1;resize:none;border:0;outline:0;background:transparent;color:var(--ink);
+    font:inherit;font-size:14.5px;line-height:1.5;max-height:160px;min-height:24px;padding:4px 0;
+  }
+  .composer textarea::placeholder{color:var(--ink-faint)}
+  .send{
+    appearance:none;cursor:pointer;flex:none;width:40px;height:40px;border-radius:11px;border:0;
+    display:flex;align-items:center;justify-content:center;color:#04222a;font-size:18px;
+    background:linear-gradient(160deg,#6fe9f8,#22d3ee);box-shadow:0 5px 16px -5px rgba(34,211,238,.75);transition:.18s;
+  }
+  .send:hover{filter:brightness(1.08)}
+  .send:active{transform:translateY(1px)}
+  .send:disabled{background:rgba(120,160,190,.16);color:var(--ink-faint);box-shadow:none;cursor:default}
+  .composer .hint{font-size:10.5px;color:var(--ink-faint);text-align:right;padding:5px 4px 0;letter-spacing:.02em}
+
+  /* ============ BRIEF ============ */
+  .brief-headline{font-size:17px;font-weight:700;line-height:1.4;color:#eafcff;letter-spacing:.005em;margin-bottom:9px;text-wrap:balance}
+  .brief-narr{font-size:13.5px;line-height:1.62;color:var(--ink-dim);margin-bottom:14px}
+  .pulse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .pulse{
+    border:1px solid var(--glass-border);border-radius:11px;padding:10px 11px;background:rgba(10,15,22,.5);
+    display:flex;flex-direction:column;gap:5px;min-width:0;transition:.2s;
+  }
+  .pulse:hover{border-color:var(--glass-border-strong);background:rgba(14,20,28,.7)}
+  .pulse .ph{display:flex;align-items:center;gap:7px}
+  .pulse .pl{font-size:12.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pulse .psum{font-size:11.5px;color:var(--ink-faint);line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+  .pulse.warn{border-color:rgba(251,191,36,.3)}
+  .stamp{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+
+  /* ============ SYSTEMS ============ */
+  .sys-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:9px}
+  .sys{
+    border:1px solid var(--glass-border);border-radius:11px;padding:10px 11px;background:rgba(10,15,22,.5);
+    display:flex;flex-direction:column;gap:6px;min-width:0;transition:.2s;
+  }
+  .sys:hover{border-color:var(--glass-border-strong);background:rgba(14,20,28,.7);transform:translateY(-1px)}
+  .sys.off{opacity:.82}
+  .sys .sh{display:flex;align-items:center;gap:7px}
+  .sys .sl{font-size:12.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sys .scap{font-size:11px;color:var(--ink-faint);font-family:var(--mono)}
+  .sys .senv{font-size:10.5px;color:var(--ink-faint);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px dashed var(--glass-border);padding-top:5px}
+  .sys .senv b{color:var(--warn);font-weight:600}
+
+  /* ============ APPROVALS ============ */
+  .appr{display:flex;flex-direction:column;gap:10px}
+  .appr-card{
+    border:1px solid rgba(251,191,36,.32);border-radius:12px;padding:12px 13px;
+    background:linear-gradient(180deg,rgba(251,191,36,.07),rgba(251,191,36,.02));
+    animation:rise .3s ease;
+  }
+  .appr-card .top{display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+  .risk-badge{
+    font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:3px 8px;border-radius:6px;border:1px solid var(--glass-border);color:var(--ink-dim);background:rgba(8,12,18,.6);
+  }
+  .risk-badge.r-send,.risk-badge.r-publish{color:#fde6bd;border-color:rgba(251,191,36,.5);background:var(--warn-soft)}
+  .risk-badge.r-spend{color:#ffd9b0;border-color:rgba(251,146,60,.5);background:rgba(251,146,60,.13)}
+  .risk-badge.r-delete{color:#fecdd3;border-color:rgba(251,113,133,.5);background:var(--bad-soft)}
+  .risk-badge.r-write{color:#bfe3f5;border-color:var(--accent-line);background:var(--accent-soft)}
+  .appr-card .action{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-left:auto}
+  .appr-card .asum{font-size:13.5px;color:#f1ddb4;line-height:1.5;margin-bottom:5px;font-weight:600}
+  .appr-card .arsn{font-size:12px;color:var(--ink-dim);line-height:1.5;margin-bottom:11px}
+  .appr-card .arow{display:flex;gap:8px}
+  .appr-card.resolving{opacity:.55;pointer-events:none}
+
+  /* ============ ACTIVITY ============ */
+  .feed{display:flex;flex-direction:column;gap:1px}
+  .fitem{
+    display:grid;grid-template-columns:auto 1fr;gap:11px;align-items:start;
+    padding:9px 10px;border-radius:9px;transition:.15s;border-left:2px solid transparent;
+  }
+  .fitem:hover{background:rgba(120,160,190,.05)}
+  .fitem.r-send,.fitem.r-publish{border-left-color:rgba(251,191,36,.6)}
+  .fitem.r-spend{border-left-color:rgba(251,146,60,.6)}
+  .fitem.r-delete{border-left-color:rgba(251,113,133,.6)}
+  .fitem.r-write{border-left-color:rgba(34,211,238,.45)}
+  .fitem.r-read{border-left-color:rgba(120,160,190,.25)}
+  .fitem .ftime{font-family:var(--mono);font-size:11px;color:var(--ink-faint);padding-top:1px;white-space:nowrap}
+  .fitem .fmain{min-width:0}
+  .fitem .fsum{font-size:13px;color:var(--ink);line-height:1.42;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .fitem .fmeta{font-size:10.5px;color:var(--ink-faint);margin-top:2px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .fitem .factor{font-family:var(--mono);text-transform:lowercase}
+  .fitem .fdec{padding:1px 6px;border-radius:5px;border:1px solid var(--glass-border);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase}
+  .fitem .fdec.approved,.fitem .fdec.done{color:#bdeedd;border-color:rgba(52,211,153,.3)}
+  .fitem .fdec.rejected,.fitem .fdec.failed{color:#fbc0cb;border-color:rgba(251,113,133,.3)}
+  .fitem .fdec.confirm,.fitem .fdec.pending{color:#fde6bd;border-color:rgba(251,191,36,.3)}
+
+  /* skeleton shimmer */
+  .skel{border-radius:10px;background:linear-gradient(100deg,rgba(120,160,190,.06) 30%,rgba(120,160,190,.13) 50%,rgba(120,160,190,.06) 70%);background-size:220% 100%;animation:sh 1.4s infinite}
+  @keyframes sh{to{background-position:-220% 0}}
+  .skel-row{height:54px;margin-bottom:9px}
+
+  .offline-note{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-faint);padding:8px 0}
+  .offline-note .sdot{background:var(--grey)}
+
+  /* small screens */
+  @media (max-width:620px){
+    .wordmark{font-size:17px;letter-spacing:.32em}
+    .topbar{padding:10px 12px;gap:10px}
+    .seg button{padding:6px 8px;font-size:11px}
+    .model-tag{display:none}
+    .panel-body{padding:12px}
+    .msg{max-width:95%}
+    .a-chat{min-height:72vh}
+  }
+  @media (max-width:380px){
+    .seg button .seg-long{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="reactor" title="Maahi core"></span>
+      <span class="wordmark">MAAHI</span>
+      <span class="tagline">operator</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="topctl">
+      <span id="brainPill" class="pill off" title="Operator brain status">
+        <span class="dot"></span><span id="brainText">connecting…</span>
+      </span>
+      <span id="modelTag" class="model-tag"></span>
+      <div class="seg" id="autonomySeg" role="group" aria-label="Autonomy mode">
+        <button data-mode="suggest" title="Propose everything; only reads run free">Suggest</button>
+        <button data-mode="act_report" title="Reversible work runs; send/spend/delete confirm"><span class="seg-long">Act-</span>report</button>
+        <button data-mode="autopilot" title="Run everything, including outbound + spend">Autopilot</button>
+      </div>
+      <button class="iconbtn" id="gearBtn" title="Set / clear access token" aria-label="Settings">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="iconbtn" id="refreshBtn" title="Refresh status, brief & feeds" aria-label="Refresh">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="banner" id="authBanner">
+    <span>🔒 <b>Access token required.</b> The server rejected the request (401). Set your token via the</span>
+    <button class="btn ghost" id="bannerGear">⚙ gear</button>
+  </div>
+
+  <!-- ============ GRID ============ -->
+  <main class="grid">
+
+    <!-- CHAT -->
+    <section class="panel a-chat">
+      <div class="panel-head">
+        <h2><span class="tick"></span>Cockpit</h2>
+        <span class="meta" id="chatMeta">Maahi · chief of staff</span>
+      </div>
+      <div class="chat-scroll" id="chatScroll">
+        <!-- empty state injected by JS -->
+      </div>
+      <div class="composer">
+        <div class="wrap">
+          <textarea id="chatInput" rows="1" placeholder="Ask Maahi to run the empire…  (Enter to send · Shift+Enter for newline)" autocomplete="off"></textarea>
+          <button class="send" id="sendBtn" title="Send" aria-label="Send message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+        <div class="hint" id="composerHint">Enter to send · Shift+Enter for newline</div>
+      </div>
+    </section>
+
+    <!-- BRIEF -->
+    <section class="panel a-brief">
+      <div class="panel-head">
+        <h2><span class="tick"></span>Executive Brief</h2>
+        <button class="btn" id="briefBtn">Brief me</button>
+      </div>
+      <div class="panel-body" id="briefBody">
+        <div class="empty"><div class="big">◴</div><div>Loading your brief…</div></div>
+      </div>
+    </section>
+
+    <!-- SYSTEMS -->
+    <section class="panel a-systems">
+      <div class="panel-head">
+        <h2><span class="tick"></span>Systems</h2>
+        <span class="meta" id="systemsMeta">—</span>
+      </div>
+      <div class="panel-body" id="systemsBody">
+        <div class="sys-grid" id="systemsGrid">
+          <div class="skel skel-row"></div><div class="skel skel-row"></div>
+          <div class="skel skel-row"></div><div class="skel skel-row"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPROVALS -->
+    <section class="panel a-approvals">
+      <div class="panel-head">
+        <h2><span class="tick"></span>Approvals</h2>
+        <span class="meta" id="approvalsMeta"></span>
+      </div>
+      <div class="panel-body" id="approvalsBody">
+        <div class="empty"><div class="big">✓</div><div>Checking the queue…</div></div>
+      </div>
+    </section>
+
+    <!-- ACTIVITY -->
+    <section class="panel a-activity">
+      <div class="panel-head">
+        <h2><span class="tick"></span>Activity</h2>
+        <span class="meta" id="activityMeta"></span>
+      </div>
+      <div class="panel-body" id="activityBody">
+        <div class="empty"><div class="big">≣</div><div>Loading the ledger…</div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+"use strict";
+(function(){
+  /* ============================================================
+     State
+     ============================================================ */
+  const State = {
+    token: null,
+    autonomy: "act_report",
+    brainOnline: false,
+    streaming: false,
+    history: [],          // [{role:'user'|'assistant', content:str}]  — plain text turns
+    pollTimer: null,
+    authFailed: false,
+  };
+
+  const EXAMPLES = [
+    "Brief me on everything",
+    "What's slipping in my pipeline?",
+    "Any failing deploys?",
+    "Draft a follow-up to my top deal",
+  ];
+
+  /* ---- tiny DOM helpers ---- */
+  const $  = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  function clear(node){ while(node && node.firstChild) node.removeChild(node.firstChild); }
+
+  function fmtTime(ts){
+    if(ts==null) return "";
+    let ms = Number(ts);
+    if(!isFinite(ms)) return "";
+    if(ms < 1e12) ms *= 1000;          // epoch seconds -> ms
+    const d = new Date(ms);
+    if(isNaN(d.getTime())) return "";
+    return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", hour12:false});
+  }
+
+  /* ---- very small, safe markdown-ish renderer (no raw HTML) ---- */
+  function renderMarkdown(src){
+    const text = String(src==null?"":src);
+    const lines = text.replace(/\r\n/g,"\n").split("\n");
+    let html = "", inUl=false, inOl=false, inCode=false, codeBuf=[];
+    const closeLists = () => { if(inUl){html+="</ul>";inUl=false;} if(inOl){html+="</ol>";inOl=false;} };
+    const inline = (s) => {
+      let t = esc(s);
+      t = t.replace(/`([^`]+)`/g, (m,c)=>"<code>"+c+"</code>");
+      t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      t = t.replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,!?]|$)/g, "$1<em>$2</em>");
+      t = t.replace(/\b(https?:\/\/[^\s<]+[^\s<.,!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+      return t;
+    };
+    for(let i=0;i<lines.length;i++){
+      let ln = lines[i];
+      if(/^```/.test(ln.trim())){
+        if(!inCode){ inCode=true; codeBuf=[]; closeLists(); }
+        else { inCode=false; html+="<pre><code>"+esc(codeBuf.join("\n"))+"</code></pre>"; }
+        continue;
+      }
+      if(inCode){ codeBuf.push(ln); continue; }
+      const um = ln.match(/^\s*[-*•]\s+(.*)$/);
+      const om = ln.match(/^\s*\d+[.)]\s+(.*)$/);
+      if(um){ if(inOl){html+="</ol>";inOl=false;} if(!inUl){html+="<ul>";inUl=true;} html+="<li>"+inline(um[1])+"</li>"; continue; }
+      if(om){ if(inUl){html+="</ul>";inUl=false;} if(!inOl){html+="<ol>";inOl=true;} html+="<li>"+inline(om[1])+"</li>"; continue; }
+      if(ln.trim()===""){ closeLists(); continue; }
+      const hm = ln.match(/^(#{1,4})\s+(.*)$/);
+      closeLists();
+      if(hm){ html+="<p><strong>"+inline(hm[2])+"</strong></p>"; }
+      else { html+="<p>"+inline(ln)+"</p>"; }
+    }
+    if(inCode){ html+="<pre><code>"+esc(codeBuf.join("\n"))+"</code></pre>"; }
+    closeLists();
+    return html || "<p></p>";
+  }
+
+  /* ============================================================
+     API layer — every call wrapped, auth header attached
+     ============================================================ */
+  function authHeaders(extra){
+    const h = Object.assign({}, extra||{});
+    if(State.token) h["Authorization"] = "Bearer " + State.token;
+    return h;
+  }
+
+  async function api(path, opts){
+    opts = opts || {};
+    const init = {
+      method: opts.method || "GET",
+      headers: authHeaders(opts.headers || (opts.body ? {"Content-Type":"application/json"} : {})),
+    };
+    if(opts.body != null) init.body = typeof opts.body === "string" ? opts.body : JSON.stringify(opts.body);
+    if(opts.signal) init.signal = opts.signal;
+    const res = await fetch(path, init);
+    if(res.status === 401){ onAuthFail(); throw new Error("unauthorized"); }
+    if(State.authFailed){ State.authFailed=false; hideBanner(); }
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    return res;
+  }
+  async function apiJSON(path, opts){ const r = await api(path, opts); return r.json(); }
+
+  function onAuthFail(){ State.authFailed = true; showBanner(); }
+  function showBanner(){ $("#authBanner").classList.add("show"); }
+  function hideBanner(){ $("#authBanner").classList.remove("show"); }
+
+  /* ============================================================
+     STATUS  (brain pill, model, autonomy, systems panel)
+     ============================================================ */
+  async function loadStatus(){
+    let st;
+    try{ st = await apiJSON("/api/status"); }
+    catch(e){ markBrain(false, null, "offline"); renderSystemsError(e); return; }
+    State.brainOnline = !!st.brain_online;
+    if(st.autonomy && !State.streaming){ State.autonomy = st.autonomy; }
+    markBrain(st.brain_online, st.model);
+    setAutonomyUI(State.autonomy);
+    renderSystems(st);
+  }
+
+  function markBrain(online, model, forced){
+    const pill = $("#brainPill"), txt = $("#brainText"), mt = $("#modelTag");
+    if(online){
+      pill.className = "pill on";
+      txt.textContent = "online";
+      pill.title = "Operator brain online";
+    } else {
+      pill.className = "pill off";
+      txt.textContent = forced==="offline" ? "offline" : "offline — set ANTHROPIC_API_KEY";
+      pill.title = "Brain offline — set ANTHROPIC_API_KEY for chat & synthesis";
+    }
+    mt.textContent = model ? model : "";
+    mt.title = model || "";
+  }
+
+  function setAutonomyUI(mode){
+    $$("#autonomySeg button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  }
+
+  function renderSystems(st){
+    const grid = $("#systemsGrid") || (function(){ const g=el("div","sys-grid"); g.id="systemsGrid"; $("#systemsBody").appendChild(g); return g; })();
+    const body = $("#systemsBody"); clear(body);
+    const connectors = Array.isArray(st.connectors) ? st.connectors : [];
+    $("#systemsMeta").textContent =
+      `${st.configured_count ?? 0}/${st.total_count ?? connectors.length} systems · ${st.tool_count ?? 0} tools`;
+    if(!connectors.length){
+      body.appendChild(emptyState("⌬","No connectors registered."));
+      return;
+    }
+    const g = el("div","sys-grid");
+    connectors.forEach(c => {
+      const card = el("div", "sys" + (c.configured ? "" : " off"));
+      const head = el("div","sh");
+      head.appendChild(el("span","sdot " + (c.configured ? "ok" : "off")));
+      const lbl = el("span","sl", c.label || c.key); lbl.title = c.blurb || c.label || "";
+      head.appendChild(lbl);
+      card.appendChild(head);
+      const cap = el("div","scap", (c.capability_count ?? 0) + (c.capability_count===1?" capability":" capabilities"));
+      card.appendChild(cap);
+      if(!c.configured && Array.isArray(c.missing_env) && c.missing_env.length){
+        const env = el("div","senv");
+        env.innerHTML = "set <b>" + c.missing_env.map(esc).join("</b> · <b>") + "</b>";
+        env.title = "Missing env: " + c.missing_env.join(", ");
+        card.appendChild(env);
+      }
+      g.appendChild(card);
+    });
+    body.appendChild(g);
+  }
+  function renderSystemsError(e){
+    const body = $("#systemsBody"); clear(body);
+    $("#systemsMeta").textContent = "offline";
+    body.appendChild(offlineState("Systems unreachable — is the operator running?"));
+  }
+
+  /* ============================================================
+     BRIEF
+     ============================================================ */
+  let briefLoading = false;
+  async function loadBrief(synthesize){
+    if(briefLoading) return;
+    briefLoading = true;
+    const btn = $("#briefBtn"); const body = $("#briefBody");
+    btn.disabled = true; const prev = btn.textContent; btn.textContent = "…";
+    clear(body);
+    body.appendChild(skeletonBlock());
+    try{
+      const b = await apiJSON("/api/brief?synthesize=" + (synthesize ? 1 : 0));
+      renderBrief(b);
+    }catch(e){
+      clear(body);
+      if(String(e.message)==="unauthorized") body.appendChild(offlineState("Set your access token to load the brief."));
+      else body.appendChild(offlineState("Brief unavailable — the operator may be offline."));
+    }finally{
+      btn.disabled = false; btn.textContent = prev;
+      briefLoading = false;
+    }
+  }
+
+  function renderBrief(b){
+    const body = $("#briefBody"); clear(body);
+    if(b.headline){
+      const h = el("div","brief-headline", b.headline);
+      body.appendChild(h);
+    }
+    if(b.narrative){
+      const n = el("div","brief-narr"); n.innerHTML = renderMarkdown(b.narrative);
+      body.appendChild(n);
+    }
+    const pulses = Array.isArray(b.pulses) ? b.pulses : [];
+    if(pulses.length){
+      const grid = el("div","pulse-grid");
+      pulses.forEach(p => {
+        const cls = (p.configured && p.ok) ? "ok" : (!p.configured ? "off" : "warn");
+        const card = el("div","pulse" + (cls==="warn"?" warn":""));
+        const head = el("div","ph");
+        head.appendChild(el("span","sdot " + cls));
+        const lbl = el("span","pl", p.label || p.key); head.appendChild(lbl);
+        card.appendChild(head);
+        if(p.summary){ card.appendChild(el("div","psum", p.summary)); }
+        card.title = (p.label||"") + (p.summary? " — "+p.summary : "");
+        grid.appendChild(card);
+      });
+      body.appendChild(grid);
+    }
+    const foot = el("div","stamp");
+    const when = b.generated_at ? fmtTime(b.generated_at) : "";
+    foot.style.marginTop = "13px";
+    foot.textContent = "generated " + (when || "just now") + (b.pending_count ? " · " + b.pending_count + " awaiting your yes" : "");
+    body.appendChild(foot);
+  }
+
+  /* ============================================================
+     APPROVALS  (pending)
+     ============================================================ */
+  async function loadPending(){
+    let data;
+    try{ data = await apiJSON("/api/pending"); }
+    catch(e){ renderPendingError(e); return; }
+    renderPending(Array.isArray(data.pending) ? data.pending : []);
+  }
+
+  function renderPending(items){
+    const body = $("#approvalsBody"); clear(body);
+    $("#approvalsMeta").textContent = items.length ? (items.length + " waiting") : "";
+    if(!items.length){
+      body.appendChild(emptyState("✓","Nothing waiting."));
+      return;
+    }
+    const wrap = el("div","appr");
+    items.forEach(it => wrap.appendChild(approvalCard(it)));
+    body.appendChild(wrap);
+  }
+  function renderPendingError(e){
+    const body = $("#approvalsBody"); clear(body);
+    $("#approvalsMeta").textContent = "";
+    body.appendChild(offlineState("Approval queue unreachable."));
+  }
+
+  function riskClass(risk){ return "r-" + String(risk||"read").toLowerCase(); }
+
+  function approvalCard(it){
+    const card = el("div","appr-card");
+    const top = el("div","top");
+    const badge = el("span","risk-badge " + riskClass(it.risk), (it.risk||"action"));
+    top.appendChild(badge);
+    if(it.action){ const a = el("span","action", it.action); a.title = "params: " + JSON.stringify(it.params||{}); top.appendChild(a); }
+    card.appendChild(top);
+    card.appendChild(el("div","asum", it.summary || it.action || "Pending action"));
+    if(it.reason){ card.appendChild(el("div","arsn", it.reason)); }
+    const row = el("div","arow");
+    const ok = el("button","btn ok","Approve");
+    const no = el("button","btn no","Reject");
+    ok.addEventListener("click", () => resolvePending(card, it.id, true, ok, no));
+    no.addEventListener("click", () => resolvePending(card, it.id, false, ok, no));
+    row.appendChild(ok); row.appendChild(no);
+    card.appendChild(row);
+    return card;
+  }
+
+  async function resolvePending(card, id, approve, okBtn, noBtn){
+    if(!id) return;
+    card.classList.add("resolving");
+    okBtn.disabled = noBtn.disabled = true;
+    try{
+      const r = await apiJSON("/api/" + (approve ? "approve" : "reject"), {method:"POST", body:{id:id}});
+      const status = r && r.status ? r.status : (approve ? "approved" : "rejected");
+      const sum = r && r.summary ? r.summary : "";
+      flashResolved(card, status, sum, approve);
+    }catch(e){
+      card.classList.remove("resolving");
+      okBtn.disabled = noBtn.disabled = false;
+      const er = el("div","arsn err-text", "Failed: " + e.message);
+      card.appendChild(er);
+    }
+    // refresh queues + feed regardless
+    setTimeout(() => { loadPending(); loadLedger(); loadStatus(); }, 650);
+  }
+
+  function flashResolved(card, status, summary, approve){
+    clear(card);
+    card.classList.remove("resolving");
+    card.style.opacity = ".82";
+    const head = el("div","ch");
+    head.innerHTML = (approve ? "✓ " : "✕ ") + esc(status||(approve?"approved":"rejected")).toUpperCase();
+    head.style.color = approve ? "var(--ok)" : "var(--bad)";
+    head.style.fontSize="11px"; head.style.fontWeight="700"; head.style.letterSpacing=".14em";
+    card.appendChild(head);
+    if(summary){ const s = el("div","cs", summary); card.appendChild(s); }
+  }
+
+  /* ============================================================
+     ACTIVITY  (ledger)
+     ============================================================ */
+  async function loadLedger(){
+    let data;
+    try{ data = await apiJSON("/api/ledger?limit=40"); }
+    catch(e){ renderLedgerError(e); return; }
+    renderLedger(Array.isArray(data.entries) ? data.entries : []);
+  }
+
+  function renderLedger(entries){
+    const body = $("#activityBody"); clear(body);
+    if(!entries.length){
+      $("#activityMeta").textContent = "";
+      body.appendChild(emptyState("≣","No activity yet."));
+      return;
+    }
+    $("#activityMeta").textContent = entries.length + " events";
+    const feed = el("div","feed");
+    // reverse-chron (most recent first); ledger returns most-recent-last
+    const rows = entries.slice().reverse();
+    rows.forEach(en => {
+      const item = el("div","fitem " + riskClass(en.risk));
+      item.appendChild(el("div","ftime", fmtTime(en.ts)));
+      const main = el("div","fmain");
+      main.appendChild(el("div","fsum", en.summary || en.action || "—"));
+      const meta = el("div","fmeta");
+      meta.appendChild(el("span","factor", en.actor || "maahi"));
+      if(en.action){ meta.appendChild(el("span","", "· " + en.action)); }
+      const dec = (en.status || en.decision || "").toLowerCase();
+      if(dec){ const d = el("span","fdec " + dec, dec); meta.appendChild(d); }
+      main.appendChild(meta);
+      item.appendChild(main);
+      item.title = (en.action||"") + " · " + (en.decision||"") + " · " + (en.status||"");
+      feed.appendChild(item);
+    });
+    body.appendChild(feed);
+  }
+  function renderLedgerError(e){
+    const body = $("#activityBody"); clear(body);
+    $("#activityMeta").textContent = "";
+    body.appendChild(offlineState("Ledger unreachable."));
+  }
+
+  /* ============================================================
+     AUTONOMY control
+     ============================================================ */
+  async function setAutonomy(mode){
+    const prev = State.autonomy;
+    State.autonomy = mode; setAutonomyUI(mode);
+    $$("#autonomySeg button").forEach(b => b.disabled = true);
+    try{
+      const r = await apiJSON("/api/autonomy", {method:"POST", body:{mode:mode}});
+      if(r && r.autonomy){ State.autonomy = r.autonomy; setAutonomyUI(r.autonomy); }
+    }catch(e){
+      State.autonomy = prev; setAutonomyUI(prev);   // revert on failure
+    }finally{
+      $$("#autonomySeg button").forEach(b => b.disabled = false);
+    }
+  }
+
+  /* ============================================================
+     CHAT  (SSE via fetch + reader)
+     ============================================================ */
+  const chatScroll = () => $("#chatScroll");
+  function atBottom(){ const s = chatScroll(); return s.scrollHeight - s.scrollTop - s.clientHeight < 90; }
+  function scrollDown(force){ const s = chatScroll(); if(force || atBottom()) s.scrollTop = s.scrollHeight; }
+
+  function showEmptyChat(){
+    const s = chatScroll(); clear(s);
+    const box = el("div","examples");
+    const glyph = el("div","glyph","M"); box.appendChild(glyph);
+    box.appendChild(el("h3","Maahi is on console."));
+    box.appendChild(el("div","sub","Your autonomous chief of staff. Ask anything — I'll pull from your live systems, act where it's safe, and flag what needs your yes."));
+    const grid = el("div","ex-grid");
+    EXAMPLES.forEach(p => { const b = el("button","ex",p); b.addEventListener("click", () => { if(!State.streaming){ $("#chatInput").value = p; sendMessage(); } }); grid.appendChild(b); });
+    box.appendChild(grid);
+    s.appendChild(box);
+  }
+  function chatHasMessages(){ return !!chatScroll().querySelector(".msg"); }
+  function ensureNoEmpty(){ const ex = chatScroll().querySelector(".examples"); if(ex) ex.remove(); }
+
+  function addUserMsg(text){
+    ensureNoEmpty();
+    const m = el("div","msg user");
+    m.appendChild(el("div","ava","ME"));
+    const b = el("div","bubble");
+    b.textContent = text;
+    m.appendChild(b);
+    chatScroll().appendChild(m);
+    scrollDown(true);
+  }
+
+  // Build an assistant message scaffold; returns controller object
+  function addAssistantMsg(){
+    ensureNoEmpty();
+    const m = el("div","msg maahi");
+    m.appendChild(el("div","ava","M"));
+    const b = el("div","bubble");
+    const textWrap = el("div","mtext");
+    const cur = el("span","cursor");
+    const chips = el("div","chips"); chips.style.display="none";
+    b.appendChild(textWrap); b.appendChild(cur); b.appendChild(chips);
+    m.appendChild(b);
+    chatScroll().appendChild(m);
+    scrollDown(true);
+
+    const chipMap = {};   // name -> chip element (latest)
+    return {
+      root:m, bubble:b, textWrap, cursor:cur, chips,
+      raw:"",
+      appendText(t){
+        this.raw += t;
+        this.textWrap.innerHTML = renderMarkdown(this.raw);
+        scrollDown();
+      },
+      setText(t){
+        this.raw = t;
+        this.textWrap.innerHTML = renderMarkdown(this.raw);
+      },
+      toolStart(name, input){
+        chips.style.display = "flex";
+        const chip = el("span","chip");
+        chip.appendChild(el("span","cd"));
+        const nm = el("span","nm","· " + shortToolName(name));
+        chip.appendChild(nm);
+        let tip = name; try{ if(input && Object.keys(input).length) tip = name + " " + JSON.stringify(input); }catch(_){}
+        chip.title = tip;
+        chips.appendChild(chip);
+        chipMap[name] = chip;
+        scrollDown();
+      },
+      toolEnd(name, status, summary){
+        let chip = chipMap[name];
+        if(!chip){ this.toolStart(name, null); chip = chipMap[name]; }
+        const ok = status === "ok" || status === "done";
+        chip.className = "chip " + (ok ? "ok" : "failed");
+        clear(chip);
+        chip.appendChild(el("span","cd"));
+        chip.appendChild(el("span","nm","· " + shortToolName(name)));
+        chip.title = name + (status?(" — "+status):"") + (summary?(": "+summary):"");
+        scrollDown();
+      },
+      addConfirm(name, pendingId, summary){
+        this.hideCursor();
+        const card = el("div","confirm");
+        const head = el("div","ch");
+        head.innerHTML = "⏸ approval needed";
+        card.appendChild(head);
+        card.appendChild(el("div","cs", summary || ("Run " + shortToolName(name) + "?")));
+        const row = el("div","cb");
+        const ok = el("button","btn ok","Approve");
+        const no = el("button","btn no","Reject");
+        ok.addEventListener("click", () => resolveInline(card, pendingId, true, ok, no));
+        no.addEventListener("click", () => resolveInline(card, pendingId, false, ok, no));
+        row.appendChild(ok); row.appendChild(no);
+        card.appendChild(row);
+        this.bubble.appendChild(card);
+        // a confirm event means there's a new pending item — refresh that panel
+        loadPending();
+        scrollDown();
+      },
+      showError(message){
+        this.hideCursor();
+        if(!this.raw){
+          this.bubble.classList.add("error");
+          this.textWrap.innerHTML = renderMarkdown(message || "Something went wrong.");
+        } else {
+          const er = el("div","arsn err-text", message || "error");
+          er.style.marginTop="8px";
+          this.bubble.appendChild(er);
+        }
+        scrollDown();
+      },
+      hideCursor(){ if(this.cursor){ this.cursor.style.display="none"; } },
+    };
+  }
+
+  function shortToolName(n){ return String(n||"").replace(/^.*\./,""); }
+
+  async function resolveInline(card, id, approve, okBtn, noBtn){
+    if(!id){ return; }
+    okBtn.disabled = noBtn.disabled = true;
+    card.classList.add("resolved");
+    try{
+      const r = await apiJSON("/api/" + (approve ? "approve":"reject"), {method:"POST", body:{id:id}});
+      const v = el("div","verdict");
+      const sum = (r && r.summary) ? (" — " + r.summary) : "";
+      v.textContent = (approve ? "✓ Approved" : "✕ Rejected") + sum;
+      v.style.color = approve ? "var(--ok)" : "var(--bad)";
+      $$(".cb", card).forEach(x=>x.remove());
+      const row = card.querySelector(".cb"); if(row) row.remove();
+      card.appendChild(v);
+    }catch(e){
+      okBtn.disabled = noBtn.disabled = false;
+      card.classList.remove("resolved");
+      const v = el("div","verdict err-text","Failed: " + e.message);
+      card.appendChild(v);
+    }
+    setTimeout(()=>{ loadPending(); loadLedger(); }, 600);
+  }
+
+  let activeAbort = null;
+
+  async function sendMessage(){
+    if(State.streaming) return;
+    const input = $("#chatInput");
+    const text = input.value.trim();
+    if(!text) return;
+
+    input.value = ""; autosize(input);
+    addUserMsg(text);
+    setStreaming(true);
+
+    // thinking indicator until first token/tool
+    const asst = addAssistantMsg();
+    const think = el("div","thinking");
+    think.innerHTML = '<span>Maahi is thinking</span><span class="d"><i></i><i></i><i></i></span>';
+    asst.textWrap.appendChild(think);
+    asst.cursor.style.display = "none";
+    let started = false;
+    const begin = () => { if(!started){ started=true; think.remove(); asst.cursor.style.display=""; } };
+
+    const historySnapshot = State.history.slice();   // prior turns only
+    let finalText = "";
+    let sawError = false;
+
+    activeAbort = new AbortController();
+    try{
+      const res = await fetch("/api/chat", {
+        method:"POST",
+        headers: authHeaders({"Content-Type":"application/json"}),
+        body: JSON.stringify({ message:text, history:historySnapshot, autonomy:State.autonomy }),
+        signal: activeAbort.signal,
+      });
+      if(res.status === 401){ onAuthFail(); begin(); asst.showError("Access token required — set it via the gear (⚙)."); sawError = true; }
+      else if(!res.ok){ begin(); asst.showError("Server error (HTTP " + res.status + ")."); sawError = true; }
+      else if(!res.body){ begin(); asst.showError("No response stream from server."); sawError = true; }
+      else {
+        if(State.authFailed){ State.authFailed=false; hideBanner(); }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        while(true){
+          const {value, done} = await reader.read();
+          if(done) break;
+          buf += decoder.decode(value, {stream:true});
+          // SSE: events separated by blank lines; data lines start with "data: "
+          let idx;
+          while((idx = buf.indexOf("\n")) >= 0){
+            let line = buf.slice(0, idx);
+            buf = buf.slice(idx + 1);
+            line = line.replace(/\r$/,"");
+            if(!line) continue;
+            if(line.startsWith("data:")){
+              const payload = line.slice(5).trim();
+              if(!payload || payload === "[DONE]") continue;
+              let ev; try{ ev = JSON.parse(payload); }catch(_){ continue; }
+              const r = handleChatEvent(ev, asst, begin);
+              if(r && r.error) sawError = true;
+              if(r && typeof r.finalText === "string") finalText = r.finalText;
+            }
+          }
+        }
+        // flush any trailing buffered data line
+        const tail = buf.replace(/\r/g,"").trim();
+        if(tail.startsWith("data:")){
+          const payload = tail.slice(5).trim();
+          if(payload && payload !== "[DONE]"){
+            try{ const ev = JSON.parse(payload); const r = handleChatEvent(ev, asst, begin); if(r && r.error) sawError=true; if(r && typeof r.finalText==="string") finalText=r.finalText; }catch(_){}
+          }
+        }
+      }
+    }catch(e){
+      begin();
+      if(e && e.name === "AbortError"){ /* user navigated away */ }
+      else { asst.showError("Connection failed — the operator may be offline. (" + (e.message||e) + ")"); sawError = true; }
+    }finally{
+      begin();
+      asst.hideCursor();
+      // reconcile final text if provided
+      if(finalText){ asst.setText(finalText); }
+      // if assistant produced nothing and no error shown, show a gentle note
+      if(!asst.raw.trim() && !sawError && !asst.bubble.querySelector(".confirm")){
+        asst.showError("No reply — the brain may be offline. Set ANTHROPIC_API_KEY on the server.");
+        sawError = true;
+      }
+      // commit to history (only successful textual turns)
+      const assistantText = (finalText || asst.raw || "").trim();
+      if(!sawError && assistantText){
+        State.history.push({role:"user", content:text});
+        State.history.push({role:"assistant", content:assistantText});
+        if(State.history.length > 40) State.history = State.history.slice(-40);
+      } else if(sawError){
+        // keep the user's message in history so context isn't lost, but skip empty assistant
+        State.history.push({role:"user", content:text});
+        if(assistantText) State.history.push({role:"assistant", content:assistantText});
+        if(State.history.length > 40) State.history = State.history.slice(-40);
+      }
+      setStreaming(false);
+      activeAbort = null;
+      scrollDown();
+    }
+  }
+
+  // returns {error?:bool, finalText?:string}
+  function handleChatEvent(ev, asst, begin){
+    switch(ev.type){
+      case "text":
+        begin();
+        if(ev.text) asst.appendText(ev.text);
+        return {};
+      case "tool_start":
+        begin();
+        asst.toolStart(ev.name, ev.input);
+        return {};
+      case "tool_end":
+        asst.toolEnd(ev.name, ev.status, ev.summary);
+        return {};
+      case "confirm":
+        begin();
+        asst.addConfirm(ev.name, ev.pending_id, ev.summary);
+        return {};
+      case "done":
+        begin();
+        return {finalText: (typeof ev.text === "string" ? ev.text : undefined)};
+      case "error":
+        begin();
+        asst.showError(ev.message || "error");
+        return {error:true};
+      default:
+        return {};
+    }
+  }
+
+  function setStreaming(on){
+    State.streaming = on;
+    $("#sendBtn").disabled = on;
+    $("#chatInput").disabled = on;
+    const hint = $("#composerHint");
+    if(on){ hint.innerHTML = '<span class="muted">streaming…</span>'; }
+    else { hint.textContent = "Enter to send · Shift+Enter for newline"; $("#chatInput").focus(); }
+  }
+
+  /* ============================================================
+     shared empty/offline/skeleton builders
+     ============================================================ */
+  function emptyState(glyph, text){
+    const e = el("div","empty");
+    e.appendChild(el("div","big",glyph));
+    e.appendChild(el("div","",text));
+    return e;
+  }
+  function offlineState(text){
+    const e = el("div","empty");
+    const dot = el("div","offline-note");
+    dot.innerHTML = '<span class="sdot"></span><span>'+esc(text)+'</span>';
+    e.appendChild(dot);
+    return e;
+  }
+  function skeletonBlock(){
+    const w = el("div");
+    const a = el("div","skel"); a.style.height="22px"; a.style.width="70%"; a.style.marginBottom="12px";
+    const b = el("div","skel"); b.style.height="56px"; b.style.marginBottom="12px";
+    const c = el("div","sys-grid");
+    for(let i=0;i<4;i++){ const k=el("div","skel"); k.style.height="48px"; c.appendChild(k); }
+    w.appendChild(a); w.appendChild(b); w.appendChild(c);
+    return w;
+  }
+
+  /* ============================================================
+     token / settings
+     ============================================================ */
+  function loadToken(){
+    try{ State.token = localStorage.getItem("maahi_token") || null; }catch(_){ State.token = null; }
+  }
+  function gearPrompt(){
+    let current = "";
+    try{ current = localStorage.getItem("maahi_token") || ""; }catch(_){}
+    const next = window.prompt(
+      "Maahi access token (Bearer).\nSent as Authorization on every request.\nLeave blank and OK to clear.",
+      current
+    );
+    if(next === null) return; // cancelled
+    const v = next.trim();
+    try{
+      if(v){ localStorage.setItem("maahi_token", v); State.token = v; }
+      else { localStorage.removeItem("maahi_token"); State.token = null; }
+    }catch(_){ State.token = v || null; }
+    hideBanner(); State.authFailed = false;
+    refreshAll(true);
+  }
+
+  /* ============================================================
+     composer behaviour
+     ============================================================ */
+  function autosize(t){
+    t.style.height = "auto";
+    t.style.height = Math.min(t.scrollHeight, 160) + "px";
+  }
+
+  /* ============================================================
+     refresh orchestration + polling
+     ============================================================ */
+  function refreshLight(){ loadStatus(); loadPending(); loadLedger(); }
+  function refreshAll(includeBrief){
+    refreshLight();
+    if(includeBrief) loadBrief(true);
+  }
+  function startPolling(){
+    if(State.pollTimer) clearInterval(State.pollTimer);
+    State.pollTimer = setInterval(() => {
+      if(document.hidden) return;       // pause when tab not visible
+      refreshLight();
+    }, 20000);
+  }
+
+  /* ============================================================
+     wire up
+     ============================================================ */
+  function init(){
+    loadToken();
+
+    // autonomy segmented control
+    $$("#autonomySeg button").forEach(b => {
+      b.addEventListener("click", () => { if(!b.classList.contains("active")) setAutonomy(b.dataset.mode); });
+    });
+
+    // gear / banner
+    $("#gearBtn").addEventListener("click", gearPrompt);
+    $("#bannerGear").addEventListener("click", gearPrompt);
+
+    // refresh button
+    const rb = $("#refreshBtn");
+    rb.addEventListener("click", () => {
+      rb.classList.add("spin");
+      refreshAll(true);
+      setTimeout(()=>rb.classList.remove("spin"), 850);
+    });
+
+    // brief button
+    $("#briefBtn").addEventListener("click", () => loadBrief(true));
+
+    // chat composer
+    const input = $("#chatInput");
+    input.addEventListener("input", () => autosize(input));
+    input.addEventListener("keydown", (e) => {
+      if(e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); sendMessage(); }
+    });
+    $("#sendBtn").addEventListener("click", sendMessage);
+
+    // empty chat state
+    showEmptyChat();
+
+    // first loads
+    refreshLight();
+    loadBrief(true);     // auto-load brief with synthesize=1 (templated if brain offline)
+    startPolling();
+
+    // refresh feeds when tab regains focus
+    document.addEventListener("visibilitychange", () => { if(!document.hidden) refreshLight(); });
+
+    input.focus();
+  }
+
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>

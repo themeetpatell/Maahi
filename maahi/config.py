@@ -64,6 +64,11 @@ class BrainCfg:
     router: str = "auto"
     openai_model: str = "gpt-4o-mini"
     openai_host: str = "https://api.openai.com/v1"
+    # Which provider serves the "powerful"/reasoning route: "claude" or
+    # "openai". Claude (Anthropic) is the frontier brain — set this to
+    # "claude" and export ANTHROPIC_API_KEY to make the voice OS Claude-run.
+    powerful: str = "openai"
+    claude_model: str = "claude-opus-4-8"
     # How long Ollama keeps the model resident after a request. Keeping it
     # hot avoids the multi-second reload tax on the first command after an
     # idle gap. "30m", "1h", or "-1" (forever).
@@ -222,6 +227,8 @@ def load_config(path: Path | None = None) -> Config:
         router=str(brain_raw.get("router", "auto")),
         openai_model=str(brain_raw.get("openai_model", "gpt-4o-mini")),
         openai_host=str(brain_raw.get("openai_host", "https://api.openai.com/v1")),
+        powerful=str(brain_raw.get("powerful", "openai")).lower(),
+        claude_model=str(brain_raw.get("claude_model", "claude-opus-4-8")),
         keep_alive=str(brain_raw.get("keep_alive", "30m")),
     )
 

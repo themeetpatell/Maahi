@@ -53,6 +53,11 @@ brain:
   temperature: 0.4
   max_tokens: 256
   max_iterations: 4
+  # Which provider serves the "powerful"/reasoning route: "claude" or
+  # "openai". Set to "claude" + export ANTHROPIC_API_KEY to make Maahi's
+  # voice OS Claude-powered. Degrades to OpenAI, then local, if unset.
+  powerful: claude
+  claude_model: claude-opus-4-8
   # Keep the model resident so the first command after an idle gap doesn't
   # pay a cold-load. "-1" = never unload; "30m"/"1h" also valid.
   keep_alive: 30m
@@ -139,3 +144,34 @@ shell_allowlist:
 - system_profiler
 - networksetup
 - ioreg
+
+# ============================================================
+#  OPERATOR — Maahi's business brain (Claude + your stack)
+# ============================================================
+# Non-secret knobs only. ALL credentials are environment variables
+# (never stored here) — see .env.example. Each value below is also
+# overridable by an env var, which always wins.
+operator:
+  # The frontier reasoner. Needs ANTHROPIC_API_KEY in the environment.
+  model: claude-opus-4-8          # env: MAAHI_MODEL
+  fast_model: claude-sonnet-4-6   # env: MAAHI_FAST_MODEL (brief synthesis)
+  max_tokens: 4096
+  temperature: 0.3
+  max_agent_steps: 12
+  # Autonomy: suggest | act_report | autopilot. act_report = do reversible
+  # work, confirm send/spend/delete.   env: MAAHI_AUTONOMY
+  autonomy: act_report
+  # Command-center server.   env: MAAHI_OPERATOR_HOST / MAAHI_OPERATOR_PORT
+  host: 127.0.0.1
+  port: 7777
+  timezone: Asia/Dubai            # env: MAAHI_TIMEZONE
+  # Ventures Maahi watches in the brief.   env: MAAHI_VENTURES="A,B,C"
+  ventures:
+  - Finanshels
+  - BiggDate
+  - Soulmap
+  - ZeroHuman
+  - StartupOS
+  - BiggFam
+  - MediCore HMS
+  - Biggbizz

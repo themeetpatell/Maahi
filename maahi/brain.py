@@ -343,6 +343,32 @@ class Brain:
                 "falling back to local Ollama."
             )
 
+        # Claude (Anthropic) — the frontier "powerful" brain. When
+        # brain.powerful == "claude" and the SDK + ANTHROPIC_API_KEY are
+        # present, the reasoning route runs on Claude instead of OpenAI.
+        # Lazy + optional: any failure degrades to OpenAI, then local.
+        self._claude = None
+        self._powerful = getattr(self.cfg.brain, "powerful", "openai")
+        if self._powerful == "claude":
+            try:
+                from .brain_claude import ClaudeChat, claude_available
+
+                if claude_available():
+                    self._claude = ClaudeChat(
+                        model=self.cfg.brain.claude_model,
+                        max_tokens=self.cfg.brain.max_tokens,
+                        temperature=self.cfg.brain.temperature,
+                    )
+                    log.info("Claude brain online: %s", self.cfg.brain.claude_model)
+                else:
+                    log.warning(
+                        "brain.powerful=claude but Claude is unavailable "
+                        "(install `anthropic` + set ANTHROPIC_API_KEY); "
+                        "powerful route will use OpenAI/local."
+                    )
+            except Exception as e:  # noqa: BLE001
+                log.warning("Claude brain init failed: %s", e)
+
     def prewarm(self) -> bool:
         """Load the model AND prime its KV cache with the real system prompt.
 
@@ -478,10 +504,20 @@ class Brain:
         return Message("system", prompt)
 
     def _chat_once(self, route: str = "local") -> str:
-        """One round-trip to the chosen brain. Returns assistant text."""
+        """One round-trip to the chosen brain. Returns assistant text.
+
+        The "openai" route is the *powerful* route: it prefers Claude when
+        configured, then OpenAI, then degrades to local Ollama.
+        """
         messages = [self._system_message.to_dict()] + [m.to_dict() for m in self.history]
-        if route == "openai" and self._openai_http is not None:
-            return self._chat_openai(messages)
+        if route == "openai":
+            if self._claude is not None:
+                try:
+                    return self._claude.complete(messages)
+                except Exception as e:  # noqa: BLE001
+                    log.error("Claude failed: %s — falling back", e)
+            if self._openai_http is not None:
+                return self._chat_openai(messages)
         return self._chat_ollama(messages)
 
     def _chat_ollama(self, messages: list[dict]) -> str:
@@ -530,10 +566,17 @@ class Brain:
         messages = [self._system_message.to_dict()] + [
             m.to_dict() for m in self.history
         ]
-        if route == "openai" and self._openai_http is not None:
-            yield from self._chat_openai_stream(messages)
-        else:
-            yield from self._chat_ollama_stream(messages)
+        if route == "openai":
+            if self._claude is not None:
+                try:
+                    yield from self._claude.stream(messages)
+                    return
+                except Exception as e:  # noqa: BLE001
+                    log.error("Claude stream failed: %s — falling back", e)
+            if self._openai_http is not None:
+                yield from self._chat_openai_stream(messages)
+                return
+        yield from self._chat_ollama_stream(messages)
 
     def _chat_ollama_stream(self, messages: list[dict]) -> Iterator[str]:
         payload = {

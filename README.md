@@ -6,6 +6,34 @@ Not an assistant — an operator. She controls your Mac, lives inside your Obsid
 
 > **New here?** Read [USAGE.md](USAGE.md) for the 5-minute orientation: HUD tabs, Settings panel, privacy controls, skill packs, and what to say. The rest of this file is install + reference.
 
+---
+
+## ⚡ Maahi 2.0 — the Operator (new)
+
+Maahi is no longer just a voice OS for your Mac. She now has a **Claude-powered
+business brain** that runs your whole company — CRM, ads, repos, infra, docs,
+mail — from one cockpit, **always-on in the cloud** as well as on your Mac.
+
+- **Claude inside.** The voice OS and the operator both reason with Claude
+  (`claude-opus-4-8`). Set `ANTHROPIC_API_KEY`, flip `brain.powerful: claude`.
+- **Reaches your stack.** 11 connectors / 57 capabilities: Zoho CRM, Gmail,
+  Notion, Google Drive, Meta Ads, Webflow, GitHub, Vercel, Supabase,
+  Cloudflare, and any remote MCP server.
+- **Acts, then reports.** Reversible work just happens; send / spend / publish /
+  delete are parked for your one-tap approval. Every action is audited.
+- **A command center.** A cinematic chat cockpit with a live executive brief
+  across every venture, system health, and an approval queue.
+
+```bash
+pip install -r requirements-operator.txt
+export ANTHROPIC_API_KEY=sk-ant-...
+bash run_operator.sh            # cockpit → http://127.0.0.1:7777
+bash run_operator.sh brief      # today's executive brief, in the terminal
+```
+
+By voice: *"Maahi, brief me on the business"* or *"what's slipping in my
+pipeline?"* → see **[OPERATOR.md](OPERATOR.md)** for the full guide.
+
 ```
 You:    "Hey Maahi, what did I write about BiggDate's ICP last week?"
 Maahi:  "Found three notes. The clearest one is 'BiggDate – ICP v2'.

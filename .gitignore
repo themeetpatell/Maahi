@@ -1,0 +1,24 @@
+# Secrets & local env
+.env
+.env.local
+
+# Virtualenvs
+.venv/
+.venv-operator/
+venv/
+
+# Operator runtime state (ledger, pending queue, memory)
+operator_state/
+*.jsonl.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Build/preview artifacts
+maahi/operator/web/cockpit_preview.png
+
+# OS
+.DS_Store

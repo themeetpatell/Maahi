@@ -29,6 +29,7 @@ from . import (
     mail,
     notes,
     obsidian,
+    operator_bridge,
     reminders,
     system,
     vision,
@@ -199,6 +200,22 @@ _BUILTIN_TOOLS: tuple[Tool, ...] = (
          web.web_search, {"query": "str", "max_results": "int: default 6"}),
     Tool("web_fetch", "Fetch a URL and return its text content.",
          web.web_fetch, {"url": "str: http(s) URL"}),
+
+    # ----- Business operator (CRM, ads, ship, infra, comms) -----
+    Tool("business_brief",
+         "Executive brief across every venture — CRM pipeline, ad spend, "
+         "deploys, infra, comms. Say this for 'brief me on the business', "
+         "'how are the companies doing', 'what's my day across the ventures'.",
+         operator_bridge.business_brief, {}),
+    Tool("business_ask",
+         "Ask Maahi's business brain to DO or answer anything across the "
+         "company stack (Zoho CRM, Meta Ads, GitHub, Vercel, Notion, Gmail, "
+         "etc.). It reads live data and acts on reversible things, parking "
+         "risky moves for your approval. Use for 'what's slipping in my "
+         "pipeline', 'pause the underperforming ad', 'draft a follow-up to "
+         "my top deal', 'any failing deploys'.",
+         operator_bridge.business_ask,
+         {"request": "str: the business request in plain language"}),
 
     # ----- System -----
     Tool("now", "Current local date and time.", system.now, {}),

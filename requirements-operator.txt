@@ -1,0 +1,11 @@
+# Maahi Operator — the business brain, headless.
+# This is the SLIM dependency set for running the operator / command-center
+# on a server or in a container — NONE of the macOS voice stack (audio, STT,
+# TTS, pyobjc, pyautogui). Install with:  pip install -r requirements-operator.txt
+
+anthropic>=0.40        # Claude — the operator brain
+httpx>=0.27            # every connector's HTTP client
+PyYAML>=6.0.1          # config
+fastapi>=0.110         # command-center API
+uvicorn>=0.29          # ASGI server
+python-dotenv>=1.0     # optional .env loading

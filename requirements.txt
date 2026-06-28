@@ -14,6 +14,7 @@ piper-tts>=1.2.0     # neural local TTS; falls back to macOS `say` if missing
 
 # ----- LLM client -----
 httpx>=0.27
+anthropic>=0.40      # Claude brain — voice "powerful" route + the Operator
 
 # ----- web -----
 ddgs>=6.1.0          # DuckDuckGo search (maintained fork)
